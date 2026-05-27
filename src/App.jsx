@@ -15,7 +15,7 @@ function App() {
       <Stars />
       <SpaceTimeGrid />
       <header>
-        <div className="container" style={{ visibility: 'hidden', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div className="container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <a href="#" style={{ fontWeight: 700, fontSize: '1.25rem', fontFamily: 'var(--font-display)', letterSpacing: '-0.02em', color: 'var(--text-primary)', textDecoration: 'none' }}>Hrishi.</a>
           <nav style={{ display: 'flex', gap: '1.5rem' }}>
             <a href="#projects" className="nav-link">Projects</a>
