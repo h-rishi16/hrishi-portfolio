@@ -175,9 +175,9 @@ header {
   right: 0;
   padding: 1.5rem 0;
   z-index: 60;
-  background: rgba(10, 10, 10, 0.5);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  background: rgba(10, 10, 10, 0.2);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
   transform: translateZ(0);
 }
 
