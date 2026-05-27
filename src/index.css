@@ -175,7 +175,7 @@ header {
   right: 0;
   padding: 1.5rem 0;
   z-index: 60;
-  background: rgba(10, 10, 10, 0.85);
+  background: rgba(10, 10, 10, 0.5);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
