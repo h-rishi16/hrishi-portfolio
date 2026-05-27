@@ -13,7 +13,7 @@ const About = () => {
         style={{ textAlign: 'center', marginBottom: '5rem' }}
         initial={{ opacity: 0, y: 30 }}
         whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, amount: 0.5 }}
+        viewport={{ once: true, amount: 0.1 }}
         transition={{ duration: 0.8 }}
       >
         About Me
@@ -25,7 +25,7 @@ const About = () => {
             style={{ fontSize: '1.5rem', marginBottom: '3rem', fontWeight: 400, letterSpacing: '-0.01em', lineHeight: 1.5 }}
             initial={{ opacity: 0, y: 40 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, amount: 0.4 }}
+            viewport={{ once: true, amount: 0.1 }}
             transition={{ duration: 0.8 }}
           >
             I am Hrishikesh Joshi, a motivated and detail-oriented Computer Science student with hands-on experience in machine learning, data analysis, and software development.
@@ -34,7 +34,7 @@ const About = () => {
           <motion.div
             initial={{ opacity: 0, y: 40 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, amount: 0.4 }}
+            viewport={{ once: true, amount: 0.1 }}
             transition={{ duration: 0.8, delay: 0.2 }}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.75rem' }}>

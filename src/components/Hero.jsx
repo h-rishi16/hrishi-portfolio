@@ -6,7 +6,7 @@ const Hero = () => {
     <section
       id="home"
       style={{
-        minHeight: "100vh",
+        minHeight: "100svh",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
