@@ -26,6 +26,12 @@ const Contact = () => {
           <a href="https://www.linkedin.com/in/hrishikesh-joshi-93607b23a" target="_blank" rel="noreferrer" className="nav-link" style={{ fontSize: '1rem', color: 'var(--text-secondary)' }}>LinkedIn ↗</a>
         </div>
       </motion.div>
+      
+      <footer style={{ position: 'absolute', bottom: '2rem', left: 0, right: 0, textAlign: 'center' }}>
+        <p style={{ color: 'var(--text-tertiary)', fontSize: '0.875rem' }}>
+          © {new Date().getFullYear()} Hrishikesh Joshi. All rights reserved.
+        </p>
+      </footer>
     </section>
   );
 };

@@ -33,12 +33,6 @@ function App() {
         <About />
         <Contact />
       </main>
-      
-      <footer style={{ textAlign: 'center', padding: '2rem' }}>
-        <p style={{ color: 'var(--text-tertiary)', fontSize: '0.875rem' }}>
-          © {new Date().getFullYear()} Hrishikesh Joshi. All rights reserved.
-        </p>
-      </footer>
     </div>
   );
 }
