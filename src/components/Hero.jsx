@@ -115,47 +115,54 @@ const Hero = () => {
               {char}
             </span>
           ))}
-          <motion.span
+          <span
             onMouseEnter={handleEnter}
             onMouseLeave={handleLeave}
-            animate={
-              eggState === 'blackhole' 
-                ? { 
-                    scale: [1, 1.3, 1], 
-                    backgroundColor: '#000000', 
-                    color: 'transparent',
-                    boxShadow: '0 0 0 2px rgba(255, 255, 255, 0.8)',
-                    borderRadius: '50%'
-                  } 
-                : eggState === 'charging'
-                ? { 
-                    scale: 5, 
-                    backgroundColor: '#ffffff', 
-                    color: 'transparent',
-                    boxShadow: '0 0 50px rgba(255, 255, 255, 1)',
-                    borderRadius: '50%'
-                  }
-                : eggState === 'blasted'
-                ? { scale: 50, opacity: 0 }
-                : { 
-                    scale: 1, 
-                    backgroundColor: 'transparent', 
-                    color: 'inherit',
-                    boxShadow: '0 0 0 0px rgba(255, 255, 255, 0)',
-                    borderRadius: '0%'
-                  }
-            }
-            transition={
-              eggState === 'blackhole' 
-                ? { repeat: Infinity, duration: 0.2 }
-                : eggState === 'charging'
-                ? { duration: 3, ease: 'easeIn' }
-                : { duration: 0.5 }
-            }
-            style={{ display: 'inline-block', cursor: 'crosshair', userSelect: 'none', position: 'relative' }}
+            style={{ display: 'inline-block', position: 'relative', cursor: 'crosshair', userSelect: 'none', color: eggState !== 'normal' ? 'transparent' : 'inherit' }}
           >
             .
-          </motion.span>
+            <motion.div
+              animate={
+                eggState === 'blackhole'
+                  ? { 
+                      width: 50, height: 50,
+                      backgroundColor: '#000000', 
+                      boxShadow: '0 0 0 2px rgba(255, 255, 255, 0.8)',
+                      opacity: 1
+                    }
+                  : eggState === 'charging'
+                  ? { 
+                      width: 50, height: 50,
+                      backgroundColor: '#ffffff', 
+                      boxShadow: '0 0 50px rgba(255, 255, 255, 1)',
+                      opacity: 1
+                    }
+                  : eggState === 'blasted'
+                  ? { width: 50, height: 50, opacity: 0 }
+                  : { 
+                      width: 0, height: 0, 
+                      backgroundColor: 'transparent', 
+                      boxShadow: '0 0 0 0px rgba(255, 255, 255, 0)',
+                      opacity: 0
+                    }
+              }
+              transition={{
+                width: { duration: eggState === 'charging' ? 3 : 0.3, ease: 'linear' },
+                height: { duration: eggState === 'charging' ? 3 : 0.3, ease: 'linear' },
+                backgroundColor: { duration: 0.3 },
+                opacity: { duration: 0.3 }
+              }}
+              style={{
+                position: 'absolute',
+                top: '50%',
+                left: '50%',
+                transform: 'translate(-50%, -50%)',
+                borderRadius: '50%',
+                pointerEvents: 'none',
+                zIndex: -1
+              }}
+            />
+          </span>
         </motion.h1>
 
         <motion.p

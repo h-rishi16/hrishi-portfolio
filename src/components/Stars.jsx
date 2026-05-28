@@ -1,9 +1,12 @@
-import React, { useMemo, useRef, useEffect } from 'react';
+import React, { useMemo, useRef, useEffect, useState } from 'react';
+import { motion } from 'framer-motion';
 
 const Stars = () => {
   const layer1Ref = useRef(null);
   const layer2Ref = useRef(null);
   const layer3Ref = useRef(null);
+  const [eggState, setEggState] = useState('normal');
+  const eggStateRef = useRef('normal');
 
   const shadows1 = useMemo(() => {
     let s = [];
@@ -29,11 +32,10 @@ const Stars = () => {
     return s.join(', ');
   }, []);
 
-  const eggStateRef = useRef('normal');
-
   useEffect(() => {
     const handleEgg = (e) => {
       eggStateRef.current = e.detail;
+      setEggState(e.detail);
     };
     window.addEventListener('EASTER_EGG', handleEgg);
     return () => window.removeEventListener('EASTER_EGG', handleEgg);
@@ -91,21 +93,30 @@ const Stars = () => {
 
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: -2, overflow: 'hidden', background: 'radial-gradient(ellipse at bottom, #0f0f13 0%, #000000 100%)' }}>
-      <div style={{ position: 'absolute', inset: 0, perspective: '600px' }}>
-        <div ref={layer1Ref} style={{ position: 'absolute', inset: 0, willChange: 'transform' }}>
-          <div style={{ position: 'absolute', width: '1px', height: '1px', boxShadow: shadows1, background: 'transparent' }} />
+      <motion.div
+        animate={{ 
+          scale: eggState === 'blackhole' ? 0.05 : 1,
+          opacity: eggState === 'blackhole' ? 0 : 1
+        }}
+        transition={{ duration: eggState === 'blackhole' ? 2 : 0.5, ease: 'easeIn' }}
+        style={{ position: 'absolute', inset: 0, transformOrigin: 'center center' }}
+      >
+        <div style={{ position: 'absolute', inset: 0, perspective: '600px' }}>
+          <div ref={layer1Ref} style={{ position: 'absolute', inset: 0, willChange: 'transform' }}>
+            <div style={{ position: 'absolute', width: '1px', height: '1px', boxShadow: shadows1, background: 'transparent' }} />
+          </div>
         </div>
-      </div>
-      <div style={{ position: 'absolute', inset: 0, perspective: '600px' }}>
-        <div ref={layer2Ref} style={{ position: 'absolute', inset: 0, willChange: 'transform' }}>
-          <div style={{ position: 'absolute', width: '2px', height: '2px', boxShadow: shadows2, background: 'transparent' }} />
+        <div style={{ position: 'absolute', inset: 0, perspective: '600px' }}>
+          <div ref={layer2Ref} style={{ position: 'absolute', inset: 0, willChange: 'transform' }}>
+            <div style={{ position: 'absolute', width: '2px', height: '2px', boxShadow: shadows2, background: 'transparent' }} />
+          </div>
         </div>
-      </div>
-      <div style={{ position: 'absolute', inset: 0, perspective: '600px' }}>
-        <div ref={layer3Ref} style={{ position: 'absolute', inset: 0, willChange: 'transform' }}>
-          <div style={{ position: 'absolute', width: '3px', height: '3px', boxShadow: shadows3, background: 'transparent' }} />
+        <div style={{ position: 'absolute', inset: 0, perspective: '600px' }}>
+          <div ref={layer3Ref} style={{ position: 'absolute', inset: 0, willChange: 'transform' }}>
+            <div style={{ position: 'absolute', width: '3px', height: '3px', boxShadow: shadows3, background: 'transparent' }} />
+          </div>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 };
