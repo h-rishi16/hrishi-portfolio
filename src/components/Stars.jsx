@@ -29,6 +29,16 @@ const Stars = () => {
     return s.join(', ');
   }, []);
 
+  const eggStateRef = useRef('normal');
+
+  useEffect(() => {
+    const handleEgg = (e) => {
+      eggStateRef.current = e.detail;
+    };
+    window.addEventListener('EASTER_EGG', handleEgg);
+    return () => window.removeEventListener('EASTER_EGG', handleEgg);
+  }, []);
+
   useEffect(() => {
     let lastScrollY = window.scrollY;
     let lastTime = performance.now();
@@ -45,9 +55,15 @@ const Stars = () => {
       lastScrollY = currentScrollY;
       scrollVelocity = scrollVelocity * 0.85 + scrollDelta * 0.15;
 
-      // Scroll down = forward thrust
-      const thrust = scrollVelocity * 20;
       const dt = delta / 1000;
+      let thrust = scrollVelocity * 20;
+
+      // Easter egg overrides
+      if (eggStateRef.current === 'blackhole') {
+        thrust = -1000; // Violent reverse warp
+      } else if (eggStateRef.current === 'supernova') {
+        thrust = 3000; // Explosive forward warp
+      }
 
       // Very slow idle drift, massive scroll warp
       z1 = (z1 + (10 + thrust) * dt) % 2000;
