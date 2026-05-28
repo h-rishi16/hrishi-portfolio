@@ -63,6 +63,7 @@ body {
     linear-gradient(to right, rgba(255, 255, 255, 0.15) 2px, transparent 2px),
     linear-gradient(to bottom, rgba(255, 255, 255, 0.15) 2px, transparent 2px);
   background-size: 60px 60px;
+  will-change: transform;
 }
 
 @keyframes gridScroll {
