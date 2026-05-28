@@ -47,7 +47,6 @@ const Cursor = () => {
       <motion.div
         animate={{
           scale: isHovering ? 1.5 : 1,
-          opacity: isHovering ? 0.6 : 0.3,
         }}
         transition={{ type: 'spring', stiffness: 300, damping: 20 }}
         style={{
