@@ -1,30 +1,23 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 
 const Hero = () => {
-  const [eggState, setEggState] = useState('normal');
-  const timerRef = useRef(null);
+  const [eggMode, setEggMode] = useState(0); // 0: blackhole, 1: supernova, 2: gravity
+  const [isActive, setIsActive] = useState(false);
 
   const handleEnter = () => {
-    setEggState('blackhole');
-    window.dispatchEvent(new CustomEvent('EASTER_EGG', { detail: 'blackhole' }));
-    
-    timerRef.current = setTimeout(() => {
-      setEggState('supernova');
-      window.dispatchEvent(new CustomEvent('EASTER_EGG', { detail: 'supernova' }));
-    }, 2000);
+    setIsActive(true);
+    const modes = ['blackhole', 'supernova', 'gravity'];
+    window.dispatchEvent(new CustomEvent('EASTER_EGG', { detail: modes[eggMode] }));
   };
 
   const handleLeave = () => {
-    clearTimeout(timerRef.current);
-    setEggState('normal');
+    setIsActive(false);
+    setEggMode((prev) => (prev + 1) % 3);
     window.dispatchEvent(new CustomEvent('EASTER_EGG', { detail: 'normal' }));
   };
 
-  useEffect(() => {
-    return () => clearTimeout(timerRef.current);
-  }, []);
-
+  const currentMode = isActive ? ['blackhole', 'supernova', 'gravity'][eggMode] : 'normal';
   const letters = ['H', 'r', 'i', 's', 'h', 'i'];
 
   return (
@@ -42,8 +35,8 @@ const Hero = () => {
       {/* Supernova Flash */}
       <motion.div
         initial={{ opacity: 0 }}
-        animate={{ opacity: eggState === 'supernova' ? 1 : 0 }}
-        transition={{ duration: 0.1, repeat: eggState === 'supernova' ? 3 : 0, repeatType: 'reverse' }}
+        animate={{ opacity: currentMode === 'supernova' ? 1 : 0 }}
+        transition={{ duration: 0.1, repeat: currentMode === 'supernova' ? 3 : 0, repeatType: 'reverse' }}
         style={{
           position: 'fixed',
           inset: 0,
@@ -95,12 +88,12 @@ const Hero = () => {
             <motion.span
               key={i}
               animate={
-                eggState === 'supernova'
+                currentMode === 'gravity'
                   ? { y: window.innerHeight, x: (Math.random() - 0.5) * 400, rotate: (Math.random() - 0.5) * 720, opacity: 0 }
                   : { y: 0, x: 0, rotate: 0, opacity: 1 }
               }
               transition={
-                eggState === 'supernova'
+                currentMode === 'gravity'
                   ? { type: 'spring', bounce: 0.6, duration: 2, delay: Math.random() * 0.2 }
                   : { type: 'spring', bounce: 0.4 }
               }
@@ -113,15 +106,19 @@ const Hero = () => {
             onMouseEnter={handleEnter}
             onMouseLeave={handleLeave}
             animate={
-              eggState === 'blackhole' 
-                ? { scale: [1, 1.5, 1], color: '#a855f7' } 
-                : eggState === 'supernova'
-                ? { scale: 20, opacity: 0, color: '#ffffff' }
-                : { scale: 1, color: 'inherit' }
+              currentMode === 'blackhole' 
+                ? { scale: [1, 1.5, 1], color: '#a855f7', y: 0, opacity: 1 } 
+                : currentMode === 'supernova'
+                ? { scale: 5, opacity: 0, color: '#ffffff', y: 0 }
+                : currentMode === 'gravity'
+                ? { y: window.innerHeight, opacity: 0, scale: 1, color: 'inherit' }
+                : { scale: 1, color: 'inherit', y: 0, opacity: 1 }
             }
             transition={
-              eggState === 'blackhole' 
+              currentMode === 'blackhole' 
                 ? { repeat: Infinity, duration: 0.2 }
+                : currentMode === 'gravity'
+                ? { type: 'spring', bounce: 0.6, duration: 2 }
                 : { duration: 0.5 }
             }
             style={{ display: 'inline-block', cursor: 'crosshair', userSelect: 'none' }}
@@ -132,8 +129,8 @@ const Hero = () => {
 
         <motion.p
           initial={{ opacity: 0, y: 20 }}
-          animate={eggState === 'supernova' ? { opacity: 0, y: 100 } : { opacity: 1, y: 0 }}
-          transition={{ duration: 1, delay: eggState === 'normal' ? 0.4 : 0 }}
+          animate={currentMode === 'supernova' || currentMode === 'gravity' ? { opacity: 0, y: 100 } : { opacity: 1, y: 0 }}
+          transition={{ duration: 1, delay: currentMode === 'normal' ? 0.4 : 0 }}
           style={{
             color: "var(--text-tertiary)",
             fontSize: "1.125rem",
