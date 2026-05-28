@@ -52,8 +52,8 @@ const Cursor = () => {
         transition={{ type: 'spring', stiffness: 300, damping: 20 }}
         style={{
           position: 'fixed',
-          left: 0,
-          top: 0,
+          left: -25,
+          top: -25,
           width: 50,
           height: 50,
           borderRadius: '50%',
@@ -62,8 +62,6 @@ const Cursor = () => {
           zIndex: 9997,
           x: lensXSpring,
           y: lensYSpring,
-          translateX: '-50%',
-          translateY: '-50%',
         }}
       />
       
@@ -76,8 +74,8 @@ const Cursor = () => {
         transition={{ type: 'spring', stiffness: 400, damping: 25 }}
         style={{
           position: 'fixed',
-          left: 0,
-          top: 0,
+          left: -2,
+          top: -2,
           width: 4,
           height: 4,
           borderRadius: '50%',
@@ -85,8 +83,6 @@ const Cursor = () => {
           zIndex: 9999,
           x: cursorX,
           y: cursorY,
-          translateX: '-50%',
-          translateY: '-50%',
           boxShadow: '0 0 10px rgba(255, 255, 255, 0.8)'
         }}
       />
