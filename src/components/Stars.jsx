@@ -60,9 +60,13 @@ const Stars = () => {
 
       // Easter egg overrides
       if (eggStateRef.current === 'blackhole') {
-        thrust = -1000; // Violent reverse warp
+        thrust = -2000; // Violent reverse warp
+      } else if (eggStateRef.current === 'charging') {
+        thrust = 1000; // Charging up forward
+      } else if (eggStateRef.current === 'blasted') {
+        thrust = 4000; // Explosive forward warp
       } else if (eggStateRef.current === 'supernova') {
-        thrust = 3000; // Explosive forward warp
+        thrust = 3000; // Legacy fallback
       }
 
       // Very slow idle drift, massive scroll warp

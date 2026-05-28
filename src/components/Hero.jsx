@@ -1,23 +1,49 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { motion } from "framer-motion";
 
 const Hero = () => {
-  const [eggMode, setEggMode] = useState(0); // 0: blackhole, 1: supernova, 2: gravity
-  const [isActive, setIsActive] = useState(false);
+  const [eggMode, setEggMode] = useState(0); // 0: blackhole, 1: supernova
+  const [eggState, setEggState] = useState('normal'); // 'normal', 'blackhole', 'charging', 'blasted'
+  
+  const modeSwitchTimer = useRef(null);
+  const chargeTimer = useRef(null);
 
   const handleEnter = () => {
-    setIsActive(true);
-    const modes = ['blackhole', 'supernova', 'gravity'];
-    window.dispatchEvent(new CustomEvent('EASTER_EGG', { detail: modes[eggMode] }));
+    clearTimeout(modeSwitchTimer.current); // Stop mode shifting while interacting
+
+    if (eggMode === 0) {
+      setEggState('blackhole');
+      window.dispatchEvent(new CustomEvent('EASTER_EGG', { detail: 'blackhole' }));
+    } else if (eggMode === 1) {
+      setEggState('charging');
+      window.dispatchEvent(new CustomEvent('EASTER_EGG', { detail: 'charging' }));
+      
+      // Charge for 3 seconds before blasting
+      chargeTimer.current = setTimeout(() => {
+        setEggState('blasted');
+        window.dispatchEvent(new CustomEvent('EASTER_EGG', { detail: 'blasted' }));
+      }, 3000);
+    }
   };
 
   const handleLeave = () => {
-    setIsActive(false);
-    setEggMode((prev) => (prev + 1) % 3);
+    clearTimeout(chargeTimer.current);
+    setEggState('normal');
     window.dispatchEvent(new CustomEvent('EASTER_EGG', { detail: 'normal' }));
+    
+    // Shift to the next mode after 5 seconds of inactivity
+    modeSwitchTimer.current = setTimeout(() => {
+      setEggMode((prev) => (prev === 0 ? 1 : 0));
+    }, 5000);
   };
 
-  const currentMode = isActive ? ['blackhole', 'supernova', 'gravity'][eggMode] : 'normal';
+  useEffect(() => {
+    return () => {
+      clearTimeout(modeSwitchTimer.current);
+      clearTimeout(chargeTimer.current);
+    };
+  }, []);
+
   const letters = ['H', 'r', 'i', 's', 'h', 'i'];
 
   return (
@@ -32,18 +58,18 @@ const Hero = () => {
         overflow: "hidden",
       }}
     >
-      {/* Supernova Flash */}
+      {/* Supernova Flash - Inverts Colors */}
       <motion.div
         initial={{ opacity: 0 }}
-        animate={{ opacity: currentMode === 'supernova' ? 1 : 0 }}
-        transition={{ duration: 0.1, repeat: currentMode === 'supernova' ? 3 : 0, repeatType: 'reverse' }}
+        animate={{ opacity: eggState === 'blasted' ? 1 : 0 }}
+        transition={{ duration: 0.2 }}
         style={{
           position: 'fixed',
           inset: 0,
           background: 'white',
           zIndex: 9999,
           pointerEvents: 'none',
-          mixBlendMode: 'difference'
+          mixBlendMode: 'difference' // Inverts all colors underneath
         }}
       />
 
@@ -85,43 +111,48 @@ const Hero = () => {
           transition={{ duration: 1, delay: 0.2 }}
         >
           {letters.map((char, i) => (
-            <motion.span
-              key={i}
-              animate={
-                currentMode === 'gravity'
-                  ? { y: window.innerHeight, x: (Math.random() - 0.5) * 400, rotate: (Math.random() - 0.5) * 720, opacity: 0 }
-                  : { y: 0, x: 0, rotate: 0, opacity: 1 }
-              }
-              transition={
-                currentMode === 'gravity'
-                  ? { type: 'spring', bounce: 0.6, duration: 2, delay: Math.random() * 0.2 }
-                  : { type: 'spring', bounce: 0.4 }
-              }
-              style={{ display: 'inline-block' }}
-            >
+            <span key={i} style={{ display: 'inline-block' }}>
               {char}
-            </motion.span>
+            </span>
           ))}
           <motion.span
             onMouseEnter={handleEnter}
             onMouseLeave={handleLeave}
             animate={
-              currentMode === 'blackhole' 
-                ? { scale: [1, 1.5, 1], color: '#a855f7', y: 0, opacity: 1 } 
-                : currentMode === 'supernova'
-                ? { scale: 5, opacity: 0, color: '#ffffff', y: 0 }
-                : currentMode === 'gravity'
-                ? { y: window.innerHeight, opacity: 0, scale: 1, color: 'inherit' }
-                : { scale: 1, color: 'inherit', y: 0, opacity: 1 }
+              eggState === 'blackhole' 
+                ? { 
+                    scale: [1, 1.3, 1], 
+                    backgroundColor: '#000000', 
+                    color: 'transparent',
+                    boxShadow: '0 0 0 2px rgba(255, 255, 255, 0.8)',
+                    borderRadius: '50%'
+                  } 
+                : eggState === 'charging'
+                ? { 
+                    scale: 5, 
+                    backgroundColor: '#ffffff', 
+                    color: 'transparent',
+                    boxShadow: '0 0 50px rgba(255, 255, 255, 1)',
+                    borderRadius: '50%'
+                  }
+                : eggState === 'blasted'
+                ? { scale: 50, opacity: 0 }
+                : { 
+                    scale: 1, 
+                    backgroundColor: 'transparent', 
+                    color: 'inherit',
+                    boxShadow: '0 0 0 0px rgba(255, 255, 255, 0)',
+                    borderRadius: '0%'
+                  }
             }
             transition={
-              currentMode === 'blackhole' 
+              eggState === 'blackhole' 
                 ? { repeat: Infinity, duration: 0.2 }
-                : currentMode === 'gravity'
-                ? { type: 'spring', bounce: 0.6, duration: 2 }
+                : eggState === 'charging'
+                ? { duration: 3, ease: 'easeIn' }
                 : { duration: 0.5 }
             }
-            style={{ display: 'inline-block', cursor: 'crosshair', userSelect: 'none' }}
+            style={{ display: 'inline-block', cursor: 'crosshair', userSelect: 'none', position: 'relative' }}
           >
             .
           </motion.span>
@@ -129,8 +160,8 @@ const Hero = () => {
 
         <motion.p
           initial={{ opacity: 0, y: 20 }}
-          animate={currentMode === 'supernova' || currentMode === 'gravity' ? { opacity: 0, y: 100 } : { opacity: 1, y: 0 }}
-          transition={{ duration: 1, delay: currentMode === 'normal' ? 0.4 : 0 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 1, delay: 0.4 }}
           style={{
             color: "var(--text-tertiary)",
             fontSize: "1.125rem",
