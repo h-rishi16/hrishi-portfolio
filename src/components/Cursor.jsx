@@ -10,6 +10,19 @@ const Cursor = () => {
   const lensYSpring = useSpring(cursorY, springConfig);
 
   const [isHovering, setIsHovering] = useState(false);
+  const [eggState, setEggState] = useState('normal');
+
+  useEffect(() => {
+    const handleEgg = (e) => {
+      if (e.detail && typeof e.detail === 'object') {
+        setEggState(e.detail.state);
+      } else {
+        setEggState(e.detail);
+      }
+    };
+    window.addEventListener('EASTER_EGG', handleEgg);
+    return () => window.removeEventListener('EASTER_EGG', handleEgg);
+  }, []);
 
   useEffect(() => {
     const moveCursor = (e) => {
@@ -23,7 +36,8 @@ const Cursor = () => {
         target.closest('a') || 
         target.closest('button') ||
         target.classList.contains('nav-link') ||
-        target.classList.contains('btn')
+        target.classList.contains('btn') ||
+        target.closest('span[style*="cursor: crosshair"]')
       ) {
         setIsHovering(true);
       } else {
@@ -46,7 +60,8 @@ const Cursor = () => {
       {/* Outer glow ring */}
       <motion.div
         animate={{
-          scale: isHovering ? 1.5 : 1,
+          scale: (eggState === 'suck' || eggState === 'supernova_charge') ? 0.8 : (isHovering ? 1.5 : 1),
+          opacity: (eggState === 'suck' || eggState === 'supernova_charge') ? 0 : 1,
         }}
         transition={{ type: 'spring', stiffness: 300, damping: 20 }}
         style={{
@@ -70,22 +85,23 @@ const Cursor = () => {
       {/* Core dot */}
       <motion.div
         animate={{
-          scale: isHovering ? 2.5 : 1,
-          backgroundColor: isHovering ? '#ffffff' : '#d4d4d4'
+          width: (eggState === 'supernova_explode' || eggState === 'supernova_charge') ? 100 : (eggState === 'suck' ? 48 : (isHovering ? 10 : 4)),
+          height: (eggState === 'supernova_explode' || eggState === 'supernova_charge') ? 100 : (eggState === 'suck' ? 48 : (isHovering ? 10 : 4)),
+          left: (eggState === 'supernova_explode' || eggState === 'supernova_charge') ? -50 : (eggState === 'suck' ? -24 : (isHovering ? -5 : -2)),
+          top: (eggState === 'supernova_explode' || eggState === 'supernova_charge') ? -50 : (eggState === 'suck' ? -24 : (isHovering ? -5 : -2)),
+          backgroundColor: (eggState === 'supernova_explode' || eggState === 'supernova_charge') ? '#ffffff' : (eggState === 'suck' ? 'rgba(0, 0, 0, 0.7)' : (isHovering ? 'rgba(255, 255, 255, 1)' : 'rgba(212, 212, 212, 1)')),
+          boxShadow: (eggState === 'supernova_explode' || eggState === 'supernova_charge') ? '0 0 50px rgba(255,255,255,1), 0 0 150px rgba(255,255,255,0.9)' : (eggState === 'suck' ? 'inset 0px 4px 10px rgba(255, 255, 255, 0.4), inset 0px -4px 10px rgba(0, 0, 0, 0.9), 0 0 0 1px rgba(255, 255, 255, 0.8), 0 0 20px rgba(255, 255, 255, 0.6)' : 'inset 0px 0px 0px rgba(255,255,255,0), 0 0 10px rgba(255, 255, 255, 0.8)')
         }}
-        transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+        transition={{ duration: eggState === 'supernova_explode' ? 0.3 : (eggState === 'supernova_charge' ? 2.0 : (eggState === 'suck' ? 1.0 : 0.2)), ease: 'easeOut' }}
         style={{
           position: 'fixed',
-          left: -2,
-          top: -2,
-          width: 4,
-          height: 4,
           borderRadius: '50%',
+          backdropFilter: 'blur(4px) contrast(1.2)',
+          WebkitBackdropFilter: 'blur(4px) contrast(1.2)',
           pointerEvents: 'none',
           zIndex: 9999,
           x: cursorX,
           y: cursorY,
-          boxShadow: '0 0 10px rgba(255, 255, 255, 0.8)'
         }}
       />
     </>

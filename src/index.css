@@ -76,7 +76,7 @@ body {
   width: 500px;
   height: 200px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.04);
+  background: rgba(255, 255, 255, 0.015);
   filter: blur(100px);
   z-index: 0;
   pointer-events: none;
@@ -204,4 +204,47 @@ header {
   .heading-lg {
     font-size: clamp(2rem, 10vw, 3rem);
   }
+}
+
+@keyframes flashAnim {
+  0% { opacity: 0; }
+  20% { opacity: 1; }
+  80% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+@keyframes elementRumbleA {
+  0% { transform: translate(0, 0); }
+  60% { transform: translate(-1px, 1px); }
+  75% { transform: translate(2px, -1px); }
+  85% { transform: translate(-3px, 2px); }
+  92% { transform: translate(4px, -3px); }
+  96% { transform: translate(-5px, 4px); }
+  100% { transform: translate(6px, -5px); }
+}
+
+@keyframes elementRumbleB {
+  0% { transform: translate(0, 0); }
+  60% { transform: translate(1px, -1px); }
+  75% { transform: translate(-2px, 1px); }
+  85% { transform: translate(3px, -2px); }
+  92% { transform: translate(-4px, 3px); }
+  96% { transform: translate(5px, -4px); }
+  100% { transform: translate(-6px, 5px); }
+}
+
+/* Make block elements like headers, cards vibrate one way */
+.charging-elements header,
+.charging-elements .projects-grid > div,
+.charging-elements h2 {
+  animation: elementRumbleA 2s cubic-bezier(0.5, 0, 1, 1) forwards !important;
+}
+
+/* Make inline elements like text, links, and paragraphs vibrate the opposite way */
+.charging-elements p,
+.charging-elements h1,
+.charging-elements li,
+.charging-elements .social-links a,
+.charging-elements h3 {
+  animation: elementRumbleB 2s cubic-bezier(0.5, 0, 1, 1) forwards !important;
 }

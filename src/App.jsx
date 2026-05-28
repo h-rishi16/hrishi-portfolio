@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Hero from './components/Hero';
 import Projects from './components/Projects';
 import Academics from './components/Academics';
@@ -8,8 +8,66 @@ import Stars from './components/Stars';
 import Cursor from './components/Cursor';
 
 function App() {
+  const [isInverted, setIsInverted] = useState(false);
+  const [isFlashing, setIsFlashing] = useState(false);
+  const [flashColor, setFlashColor] = useState('white');
+  const [eggState, setEggState] = useState('normal');
+  const [implosionOrigin, setImplosionOrigin] = useState({ x: 0, y: 0 });
+
+  useEffect(() => {
+    const handleEgg = (e) => {
+      if (e.detail) {
+        if (e.detail.state === 'supernova_charge') {
+          setImplosionOrigin({ x: e.detail.x, y: e.detail.y });
+          setEggState('supernova_charge');
+          
+          setTimeout(() => {
+            setFlashColor(isInverted ? 'black' : 'white');
+            setIsFlashing(true);
+            setEggState('supernova_explode');
+            window.dispatchEvent(new CustomEvent('EASTER_EGG', { detail: { state: 'supernova_explode' } }));
+            setTimeout(() => {
+              setIsInverted(prev => !prev);
+              setEggState('normal');
+              window.dispatchEvent(new CustomEvent('EASTER_EGG', { detail: { state: 'normal' } }));
+              setTimeout(() => {
+                setIsFlashing(false);
+              }, 800); 
+            }, 200); 
+          }, 2000);
+        } else if (e.detail.state === 'normal') {
+          setEggState('normal');
+        }
+      }
+    };
+    window.addEventListener('EASTER_EGG', handleEgg);
+    return () => window.removeEventListener('EASTER_EGG', handleEgg);
+  }, [isInverted]);
+
+  useEffect(() => {
+    document.documentElement.style.filter = '';
+    document.documentElement.style.transition = '';
+    document.documentElement.style.backgroundColor = '';
+  }, []);
+
   return (
-    <div className="app">
+    <div className={`app ${eggState === 'supernova_charge' ? 'charging-elements' : ''}`}>
+      {isInverted && (
+        <div style={{
+          position: 'fixed',
+          inset: 0,
+          backgroundColor: 'white',
+          mixBlendMode: 'difference',
+          zIndex: 999998,
+          pointerEvents: 'none'
+        }} />
+      )}
+      {isFlashing && (
+        <div style={{ 
+          position: 'fixed', inset: 0, backgroundColor: flashColor, zIndex: 999999, 
+          animation: 'flashAnim 0.8s ease-out forwards', pointerEvents: 'none' 
+        }} />
+      )}
       <Cursor />
       <Stars />
       <header>

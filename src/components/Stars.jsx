@@ -1,41 +1,44 @@
-import React, { useMemo, useRef, useEffect, useState } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 
+const generateShadows = (count) => {
+  let s = [];
+  for (let i = 0; i < count; i++) {
+    s.push(`${Math.floor(Math.random() * 200 - 50)}vw ${Math.floor(Math.random() * 200 - 50)}vh rgba(255, 255, 255, ${Math.random() * 0.8 + 0.2})`);
+  }
+  return s.join(', ');
+};
+
+const SHADOWS_1 = generateShadows(600);
+const SHADOWS_2 = generateShadows(250);
+const SHADOWS_3 = generateShadows(100);
+
 const Stars = () => {
-  const layer1Ref = useRef(null);
-  const layer2Ref = useRef(null);
-  const layer3Ref = useRef(null);
+  const layer1Refs = useRef([]);
+  const layer2Refs = useRef([]);
+  const layer3Refs = useRef([]);
   const [eggState, setEggState] = useState('normal');
+  const [origin, setOrigin] = useState({ x: '50%', y: '50%' });
   const eggStateRef = useRef('normal');
-
-  const shadows1 = useMemo(() => {
-    let s = [];
-    for (let i = 0; i < 600; i++) {
-      s.push(`${Math.floor(Math.random() * 200 - 50)}vw ${Math.floor(Math.random() * 200 - 50)}vh rgba(255, 255, 255, ${Math.random() * 0.8 + 0.2})`);
-    }
-    return s.join(', ');
-  }, []);
-
-  const shadows2 = useMemo(() => {
-    let s = [];
-    for (let i = 0; i < 250; i++) {
-      s.push(`${Math.floor(Math.random() * 200 - 50)}vw ${Math.floor(Math.random() * 200 - 50)}vh rgba(255, 255, 255, ${Math.random() * 0.8 + 0.2})`);
-    }
-    return s.join(', ');
-  }, []);
-
-  const shadows3 = useMemo(() => {
-    let s = [];
-    for (let i = 0; i < 100; i++) {
-      s.push(`${Math.floor(Math.random() * 200 - 50)}vw ${Math.floor(Math.random() * 200 - 50)}vh rgba(255, 255, 255, ${Math.random() * 0.8 + 0.2})`);
-    }
-    return s.join(', ');
-  }, []);
 
   useEffect(() => {
     const handleEgg = (e) => {
-      eggStateRef.current = e.detail;
-      setEggState(e.detail);
+      if (e.detail) {
+        if (e.detail.state === 'suck' || e.detail.state === 'supernova_charge') {
+          eggStateRef.current = e.detail.state;
+          setEggState(e.detail.state);
+          if (e.detail.x !== undefined) {
+            setOrigin({ x: `${e.detail.x}px`, y: `${e.detail.y}px` });
+          }
+        } else if (e.detail.state === 'normal') {
+          setEggState('normal');
+          
+          // Freeze the physical drift for exactly the duration of the scale animation (600ms)
+          setTimeout(() => {
+            eggStateRef.current = 'normal';
+          }, 600);
+        }
+      }
     };
     window.addEventListener('EASTER_EGG', handleEgg);
     return () => window.removeEventListener('EASTER_EGG', handleEgg);
@@ -60,29 +63,25 @@ const Stars = () => {
       const dt = delta / 1000;
       let thrust = scrollVelocity * 20;
 
-      // Easter egg overrides
-      if (eggStateRef.current === 'blackhole') {
-        thrust = -2000; // Violent reverse warp
-      } else if (eggStateRef.current === 'charging') {
-        thrust = 1000; // Charging up forward
-      } else if (eggStateRef.current === 'blasted') {
-        thrust = 4000; // Explosive forward warp
-      } else if (eggStateRef.current === 'supernova') {
-        thrust = 3000; // Legacy fallback
+      if (eggStateRef.current !== 'suck' && eggStateRef.current !== 'supernova_charge') {
+        z1 = (z1 + (10 + thrust) * dt) % 2000;
+        z2 = (z2 + (20 + thrust * 3) * dt) % 2000;
+        z3 = (z3 + (40 + thrust * 8) * dt) % 2000;
+
+        if (z1 < 0) z1 += 2000;
+        if (z2 < 0) z2 += 2000;
+        if (z3 < 0) z3 += 2000;
+
+        layer1Refs.current.forEach((ref, i) => {
+          if (ref) ref.style.transform = `translateZ(${((z1 + i * 1000) % 2000) - 1000}px)`;
+        });
+        layer2Refs.current.forEach((ref, i) => {
+          if (ref) ref.style.transform = `translateZ(${((z2 + i * 1000) % 2000) - 1000}px)`;
+        });
+        layer3Refs.current.forEach((ref, i) => {
+          if (ref) ref.style.transform = `translateZ(${((z3 + i * 1000) % 2000) - 1000}px)`;
+        });
       }
-
-      // Very slow idle drift, massive scroll warp
-      z1 = (z1 + (10 + thrust) * dt) % 2000;
-      z2 = (z2 + (20 + thrust * 3) * dt) % 2000;
-      z3 = (z3 + (40 + thrust * 8) * dt) % 2000;
-
-      if (z1 < 0) z1 += 2000;
-      if (z2 < 0) z2 += 2000;
-      if (z3 < 0) z3 += 2000;
-
-      if (layer1Ref.current) layer1Ref.current.style.transform = `translateZ(${z1 - 1000}px)`;
-      if (layer2Ref.current) layer2Ref.current.style.transform = `translateZ(${z2 - 1000}px)`;
-      if (layer3Ref.current) layer3Ref.current.style.transform = `translateZ(${z3 - 1000}px)`;
 
       rafId = requestAnimationFrame(tick);
     };
@@ -94,29 +93,37 @@ const Stars = () => {
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: -2, overflow: 'hidden', background: 'radial-gradient(ellipse at bottom, #0f0f13 0%, #000000 100%)' }}>
       <motion.div
-        animate={{ 
-          scale: eggState === 'blackhole' ? 0.05 : 1,
-          opacity: eggState === 'blackhole' ? 0 : 1
-        }}
-        transition={{ duration: eggState === 'blackhole' ? 2 : 0.5, ease: 'easeIn' }}
-        style={{ position: 'absolute', inset: 0, transformOrigin: 'center center' }}
+        animate={{ scale: (eggState === 'suck' || eggState === 'supernova_charge' || eggState === 'supernova_explode') ? 0.01 : 1, opacity: (eggState === 'suck' || eggState === 'supernova_charge' || eggState === 'supernova_explode') ? 0.01 : 1 }}
+        transition={{ duration: eggState === 'supernova_charge' ? 2.0 : 0.6, ease: eggState === 'normal' ? 'easeOut' : 'easeIn' }}
+        style={{ position: 'absolute', inset: 0, transformOrigin: `${origin.x} ${origin.y}`, willChange: 'transform, opacity' }}
       >
+        {/* Layer 1 - Slowest */}
         <div style={{ position: 'absolute', inset: 0, perspective: '600px' }}>
-          <div ref={layer1Ref} style={{ position: 'absolute', inset: 0, willChange: 'transform' }}>
-            <div style={{ position: 'absolute', width: '1px', height: '1px', boxShadow: shadows1, background: 'transparent' }} />
-            <div style={{ position: 'absolute', width: '1px', height: '1px', boxShadow: shadows1, background: 'transparent', transform: 'translateZ(-2000px)' }} />
+          <div ref={el => layer1Refs.current[0] = el} style={{ position: 'absolute', inset: 0, willChange: 'transform' }}>
+            <div style={{ position: 'absolute', width: '1px', height: '1px', boxShadow: SHADOWS_1, background: 'transparent' }} />
+          </div>
+          <div ref={el => layer1Refs.current[1] = el} style={{ position: 'absolute', inset: 0, willChange: 'transform' }}>
+            <div style={{ position: 'absolute', width: '1px', height: '1px', boxShadow: SHADOWS_1, background: 'transparent' }} />
           </div>
         </div>
+
+        {/* Layer 2 - Medium */}
         <div style={{ position: 'absolute', inset: 0, perspective: '600px' }}>
-          <div ref={layer2Ref} style={{ position: 'absolute', inset: 0, willChange: 'transform' }}>
-            <div style={{ position: 'absolute', width: '2px', height: '2px', boxShadow: shadows2, background: 'transparent' }} />
-            <div style={{ position: 'absolute', width: '2px', height: '2px', boxShadow: shadows2, background: 'transparent', transform: 'translateZ(-2000px)' }} />
+          <div ref={el => layer2Refs.current[0] = el} style={{ position: 'absolute', inset: 0, willChange: 'transform' }}>
+            <div style={{ position: 'absolute', width: '2px', height: '2px', boxShadow: SHADOWS_2, background: 'transparent' }} />
+          </div>
+          <div ref={el => layer2Refs.current[1] = el} style={{ position: 'absolute', inset: 0, willChange: 'transform' }}>
+            <div style={{ position: 'absolute', width: '2px', height: '2px', boxShadow: SHADOWS_2, background: 'transparent' }} />
           </div>
         </div>
+
+        {/* Layer 3 - Fastest */}
         <div style={{ position: 'absolute', inset: 0, perspective: '600px' }}>
-          <div ref={layer3Ref} style={{ position: 'absolute', inset: 0, willChange: 'transform' }}>
-            <div style={{ position: 'absolute', width: '3px', height: '3px', boxShadow: shadows3, background: 'transparent' }} />
-            <div style={{ position: 'absolute', width: '3px', height: '3px', boxShadow: shadows3, background: 'transparent', transform: 'translateZ(-2000px)' }} />
+          <div ref={el => layer3Refs.current[0] = el} style={{ position: 'absolute', inset: 0, willChange: 'transform' }}>
+            <div style={{ position: 'absolute', width: '3px', height: '3px', boxShadow: SHADOWS_3, background: 'transparent' }} />
+          </div>
+          <div ref={el => layer3Refs.current[1] = el} style={{ position: 'absolute', inset: 0, willChange: 'transform' }}>
+            <div style={{ position: 'absolute', width: '3px', height: '3px', boxShadow: SHADOWS_3, background: 'transparent' }} />
           </div>
         </div>
       </motion.div>
