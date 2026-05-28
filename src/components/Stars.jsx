@@ -1,63 +1,91 @@
-import React, { useMemo } from 'react';
-import { motion, useScroll, useVelocity, useSpring, useAnimationFrame, useMotionValue, useTransform } from 'framer-motion';
+import React, { useMemo, useRef, useEffect } from 'react';
 
-const StarLayer = ({ count, size, baseSpeed, velocityMultiplier }) => {
-  const shadows = useMemo(() => {
+const Stars = () => {
+  const layer1Ref = useRef(null);
+  const layer2Ref = useRef(null);
+  const layer3Ref = useRef(null);
+
+  const shadows1 = useMemo(() => {
     let s = [];
-    for (let i = 0; i < count; i++) {
-      // Scatter stars in a wide area so they don't clip out when zooming past the camera
+    for (let i = 0; i < 600; i++) {
       s.push(`${Math.floor(Math.random() * 200 - 50)}vw ${Math.floor(Math.random() * 200 - 50)}vh rgba(255, 255, 255, ${Math.random() * 0.8 + 0.2})`);
     }
     return s.join(', ');
-  }, [count]);
+  }, []);
 
-  const { scrollY } = useScroll();
-  const scrollVelocity = useVelocity(scrollY);
-  const smoothVelocity = useSpring(scrollVelocity, { damping: 50, stiffness: 400 });
-  const zPos = useMotionValue(0);
+  const shadows2 = useMemo(() => {
+    let s = [];
+    for (let i = 0; i < 250; i++) {
+      s.push(`${Math.floor(Math.random() * 200 - 50)}vw ${Math.floor(Math.random() * 200 - 50)}vh rgba(255, 255, 255, ${Math.random() * 0.8 + 0.2})`);
+    }
+    return s.join(', ');
+  }, []);
 
-  useAnimationFrame((t, delta) => {
-    let moveBy = baseSpeed * (delta / 1000);
-    
-    // Scroll down = positive velocity. User wants scroll down -> forward motion.
-    let velocityMove = smoothVelocity.get() * (delta / 1000) * velocityMultiplier;
-    moveBy += velocityMove;
-    
-    zPos.set((zPos.get() + moveBy) % 2000);
-  });
+  const shadows3 = useMemo(() => {
+    let s = [];
+    for (let i = 0; i < 100; i++) {
+      s.push(`${Math.floor(Math.random() * 200 - 50)}vw ${Math.floor(Math.random() * 200 - 50)}vh rgba(255, 255, 255, ${Math.random() * 0.8 + 0.2})`);
+    }
+    return s.join(', ');
+  }, []);
 
-  // Original layer translates from -1000 to 1000
-  const transform1 = useTransform(zPos, (z) => {
-    let rawZ = (z % 2000);
-    if (rawZ < 0) rawZ += 2000;
-    return `translate3d(0, 0, ${rawZ - 1000}px)`;
-  });
+  useEffect(() => {
+    let lastScrollY = window.scrollY;
+    let lastTime = performance.now();
+    let scrollVelocity = 0;
+    let z1 = 0, z2 = 0, z3 = 0;
+    let rafId;
 
-  // Duplicate layer spaced exactly 2000px behind (-3000 to -1000)
-  const transform2 = useTransform(zPos, (z) => {
-    let rawZ = (z % 2000);
-    if (rawZ < 0) rawZ += 2000;
-    return `translate3d(0, 0, ${rawZ - 3000}px)`;
-  });
+    const tick = (now) => {
+      const delta = Math.min(now - lastTime, 50);
+      lastTime = now;
 
-  return (
-    <div style={{ position: 'absolute', inset: 0, perspective: '600px', transformStyle: 'preserve-3d' }}>
-      <motion.div style={{ position: 'absolute', inset: 0, transform: transform1, willChange: 'transform' }}>
-        <div style={{ position: 'absolute', width: size, height: size, boxShadow: shadows, background: 'transparent' }} />
-      </motion.div>
-      <motion.div style={{ position: 'absolute', inset: 0, transform: transform2, willChange: 'transform' }}>
-        <div style={{ position: 'absolute', width: size, height: size, boxShadow: shadows, background: 'transparent' }} />
-      </motion.div>
-    </div>
-  );
-};
+      const currentScrollY = window.scrollY;
+      const scrollDelta = currentScrollY - lastScrollY;
+      lastScrollY = currentScrollY;
+      scrollVelocity = scrollVelocity * 0.85 + scrollDelta * 0.15;
 
-const Stars = () => {
+      // Scroll down = forward thrust
+      const thrust = scrollVelocity * 20;
+      const dt = delta / 1000;
+
+      // Very slow idle drift, massive scroll warp
+      z1 = (z1 + (10 + thrust) * dt) % 2000;
+      z2 = (z2 + (20 + thrust * 3) * dt) % 2000;
+      z3 = (z3 + (40 + thrust * 8) * dt) % 2000;
+
+      if (z1 < 0) z1 += 2000;
+      if (z2 < 0) z2 += 2000;
+      if (z3 < 0) z3 += 2000;
+
+      if (layer1Ref.current) layer1Ref.current.style.transform = `translateZ(${z1 - 1000}px)`;
+      if (layer2Ref.current) layer2Ref.current.style.transform = `translateZ(${z2 - 1000}px)`;
+      if (layer3Ref.current) layer3Ref.current.style.transform = `translateZ(${z3 - 1000}px)`;
+
+      rafId = requestAnimationFrame(tick);
+    };
+
+    rafId = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(rafId);
+  }, []);
+
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: -2, overflow: 'hidden', background: 'radial-gradient(ellipse at bottom, #0f0f13 0%, #000000 100%)' }}>
-      <StarLayer count={250} size="1px" baseSpeed={50} velocityMultiplier={5.0} />
-      <StarLayer count={100} size="2px" baseSpeed={100} velocityMultiplier={10.0} />
-      <StarLayer count={50} size="3px" baseSpeed={250} velocityMultiplier={25.0} />
+      <div style={{ position: 'absolute', inset: 0, perspective: '600px' }}>
+        <div ref={layer1Ref} style={{ position: 'absolute', inset: 0, willChange: 'transform' }}>
+          <div style={{ position: 'absolute', width: '1px', height: '1px', boxShadow: shadows1, background: 'transparent' }} />
+        </div>
+      </div>
+      <div style={{ position: 'absolute', inset: 0, perspective: '600px' }}>
+        <div ref={layer2Ref} style={{ position: 'absolute', inset: 0, willChange: 'transform' }}>
+          <div style={{ position: 'absolute', width: '2px', height: '2px', boxShadow: shadows2, background: 'transparent' }} />
+        </div>
+      </div>
+      <div style={{ position: 'absolute', inset: 0, perspective: '600px' }}>
+        <div ref={layer3Ref} style={{ position: 'absolute', inset: 0, willChange: 'transform' }}>
+          <div style={{ position: 'absolute', width: '3px', height: '3px', boxShadow: shadows3, background: 'transparent' }} />
+        </div>
+      </div>
     </div>
   );
 };

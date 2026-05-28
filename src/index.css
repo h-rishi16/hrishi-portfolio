@@ -65,9 +65,9 @@ body {
   background-size: 60px 60px;
 }
 
-@keyframes grid-flow {
-  0% { background-position: 0 0; }
-  100% { background-position: 0 60px; }
+@keyframes gridScroll {
+  0% { transform: perspective(600px) rotateX(60deg) translateY(0); }
+  100% { transform: perspective(600px) rotateX(60deg) translateY(60px); }
 }
 
 .ambient-glow {

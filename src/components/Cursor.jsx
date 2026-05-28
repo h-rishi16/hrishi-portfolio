@@ -5,7 +5,6 @@ const Cursor = () => {
   const cursorX = useMotionValue(-100);
   const cursorY = useMotionValue(-100);
   
-  // Spring config for the gravitational lens to give it a liquid, magnetic feel
   const springConfig = { damping: 25, stiffness: 300, mass: 0.8 };
   const lensXSpring = useSpring(cursorX, springConfig);
   const lensYSpring = useSpring(cursorY, springConfig);
@@ -44,10 +43,11 @@ const Cursor = () => {
 
   return (
     <>
-      {/* Clear Glass Lens (High Contrast Refraction) */}
+      {/* Outer glow ring */}
       <motion.div
         animate={{
           scale: isHovering ? 1.5 : 1,
+          opacity: isHovering ? 0.6 : 0.3,
         }}
         transition={{ type: 'spring', stiffness: 300, damping: 20 }}
         style={{
@@ -57,12 +57,7 @@ const Cursor = () => {
           width: 50,
           height: 50,
           borderRadius: '50%',
-          // High contrast and slight blur creates a beautiful clear glass refraction illusion
-          backdropFilter: 'blur(2px) contrast(1.8) brightness(1.1) saturate(1.2)',
-          WebkitBackdropFilter: 'blur(2px) contrast(1.8) brightness(1.1) saturate(1.2)',
           border: '1px solid rgba(255, 255, 255, 0.4)',
-          // 3D lighting to make it look like a physical glass orb
-          boxShadow: 'inset 0px 4px 10px rgba(255, 255, 255, 0.5), inset 0px -4px 10px rgba(0, 0, 0, 0.5), 0px 10px 20px rgba(0, 0, 0, 0.6)',
           pointerEvents: 'none',
           zIndex: 9997,
           x: lensXSpring,
@@ -72,7 +67,7 @@ const Cursor = () => {
         }}
       />
       
-      {/* Precision Core Dot (Instant Follow) */}
+      {/* Core dot */}
       <motion.div
         animate={{
           scale: isHovering ? 2.5 : 1,
