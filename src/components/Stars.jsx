@@ -104,16 +104,19 @@ const Stars = () => {
         <div style={{ position: 'absolute', inset: 0, perspective: '600px' }}>
           <div ref={layer1Ref} style={{ position: 'absolute', inset: 0, willChange: 'transform' }}>
             <div style={{ position: 'absolute', width: '1px', height: '1px', boxShadow: shadows1, background: 'transparent' }} />
+            <div style={{ position: 'absolute', width: '1px', height: '1px', boxShadow: shadows1, background: 'transparent', transform: 'translateZ(-2000px)' }} />
           </div>
         </div>
         <div style={{ position: 'absolute', inset: 0, perspective: '600px' }}>
           <div ref={layer2Ref} style={{ position: 'absolute', inset: 0, willChange: 'transform' }}>
             <div style={{ position: 'absolute', width: '2px', height: '2px', boxShadow: shadows2, background: 'transparent' }} />
+            <div style={{ position: 'absolute', width: '2px', height: '2px', boxShadow: shadows2, background: 'transparent', transform: 'translateZ(-2000px)' }} />
           </div>
         </div>
         <div style={{ position: 'absolute', inset: 0, perspective: '600px' }}>
           <div ref={layer3Ref} style={{ position: 'absolute', inset: 0, willChange: 'transform' }}>
             <div style={{ position: 'absolute', width: '3px', height: '3px', boxShadow: shadows3, background: 'transparent' }} />
+            <div style={{ position: 'absolute', width: '3px', height: '3px', boxShadow: shadows3, background: 'transparent', transform: 'translateZ(-2000px)' }} />
           </div>
         </div>
       </motion.div>

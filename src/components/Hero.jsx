@@ -118,9 +118,9 @@ const Hero = () => {
           <span
             onMouseEnter={handleEnter}
             onMouseLeave={handleLeave}
-            style={{ display: 'inline-block', position: 'relative', cursor: 'crosshair', userSelect: 'none', color: eggState !== 'normal' ? 'transparent' : 'inherit' }}
+            style={{ display: 'inline-block', position: 'relative', cursor: 'crosshair', userSelect: 'none' }}
           >
-            .
+            <span style={{ opacity: eggState !== 'normal' ? 0 : 1 }}>.</span>
             <motion.div
               animate={
                 eggState === 'blackhole'
