@@ -88,7 +88,7 @@ const Projects = () => {
                 <div style={{ display: 'flex', gap: '1.25rem', fontSize: '0.85rem' }}>
                   {p.demoLink && (
                     <a href={p.demoLink} target="_blank" rel="noreferrer" style={{ color: 'rgba(255,255,255,0.9)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.25rem', borderBottom: '1px solid rgba(255,255,255,0.3)', paddingBottom: '2px' }}>
-                      Live Demo ↗
+                      Launch App ↗
                     </a>
                   )}
                 </div>
