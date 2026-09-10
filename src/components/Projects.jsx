@@ -76,18 +76,19 @@ const Projects = () => {
               
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem', marginBottom: '0.75rem' }}>
                 <h3 style={{ fontSize: '1.5rem', margin: 0, fontWeight: 500, letterSpacing: '-0.01em', lineHeight: 1.3 }}>
-                  <span className="text-silver-gradient">{p.title}</span>
+                  {p.link !== '#' ? (
+                    <a href={p.link} target="_blank" rel="noreferrer" className="text-silver-gradient" style={{ textDecoration: 'none' }}>
+                      {p.title} ↗
+                    </a>
+                  ) : (
+                    <span className="text-silver-gradient">{p.title}</span>
+                  )}
                 </h3>
                 
                 <div style={{ display: 'flex', gap: '1.25rem', fontSize: '0.85rem' }}>
                   {p.demoLink && (
                     <a href={p.demoLink} target="_blank" rel="noreferrer" style={{ color: 'rgba(255,255,255,0.9)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.25rem', borderBottom: '1px solid rgba(255,255,255,0.3)', paddingBottom: '2px' }}>
                       Live Demo ↗
-                    </a>
-                  )}
-                  {p.link !== '#' && (
-                    <a href={p.link} target="_blank" rel="noreferrer" style={{ color: 'rgba(255,255,255,0.5)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-                      GitHub ↗
                     </a>
                   )}
                 </div>
