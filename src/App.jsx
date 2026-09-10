@@ -6,6 +6,7 @@ import About from './components/About';
 import Contact from './components/Contact';
 import Stars from './components/Stars';
 import Cursor from './components/Cursor';
+import { triggerGravity } from './utils/gravity';
 
 function App() {
   const [isInverted, setIsInverted] = useState(false);
@@ -13,8 +14,31 @@ function App() {
   const [flashColor, setFlashColor] = useState('white');
   const [eggState, setEggState] = useState('normal');
   const [implosionOrigin, setImplosionOrigin] = useState({ x: 0, y: 0 });
+  const [resetKey, setResetKey] = useState(0);
 
   useEffect(() => {
+    const handleReset = () => setResetKey(prev => prev + 1);
+    window.addEventListener('RESET_DOM', handleReset);
+    return () => window.removeEventListener('RESET_DOM', handleReset);
+  }, []);
+
+  useEffect(() => {
+    let konamiCode = '';
+    const handleKeyDown = (e) => {
+      if (e.key.length === 1) {
+        konamiCode += e.key.toLowerCase();
+        if (konamiCode.length > 20) konamiCode = konamiCode.slice(-20);
+        
+        if (konamiCode.includes('antigravity')) {
+          triggerGravity(true);
+          konamiCode = '';
+        } else if (konamiCode.includes('gravity')) {
+          triggerGravity(false);
+          konamiCode = '';
+        }
+      }
+    };
+
     const handleEgg = (e) => {
       if (e.detail) {
         if (e.detail.state === 'supernova_charge') {
@@ -41,7 +65,11 @@ function App() {
       }
     };
     window.addEventListener('EASTER_EGG', handleEgg);
-    return () => window.removeEventListener('EASTER_EGG', handleEgg);
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('EASTER_EGG', handleEgg);
+      window.removeEventListener('keydown', handleKeyDown);
+    };
   }, [isInverted]);
 
   useEffect(() => {
@@ -51,7 +79,7 @@ function App() {
   }, []);
 
   return (
-    <div className={`app ${eggState === 'supernova_charge' ? 'charging-elements' : ''}`}>
+    <div key={resetKey} className={`app ${eggState === 'supernova_charge' ? 'charging-elements' : ''}`}>
       {isInverted && (
         <div style={{
           position: 'fixed',

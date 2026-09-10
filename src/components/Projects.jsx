@@ -10,6 +10,13 @@ const projectData = [
     link: 'https://github.com/h-rishi16/OURE'
   },
   {
+    title: 'Sentinel Risk Intelligence',
+    category: 'Financial Engineering',
+    description: 'A high-performance quantitative risk management terminal for real-time fraud detection, credit risk modeling, and Monte Carlo VaR forecasting.',
+    tech: ['Python', 'FastAPI', 'HTMX', 'Tailwind', 'XGBoost'],
+    link: 'https://github.com/h-rishi16/sentinel'
+  },
+  {
     title: 'Loan Default Risk',
     category: 'Machine Learning',
     description: 'Predictive ML solution for LendingClub data using XGBoost. Enhanced transparency with SHAP-based feature importance.',

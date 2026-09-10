@@ -174,11 +174,12 @@ header {
   top: 0;
   left: 0;
   right: 0;
-  padding: 1.5rem 0;
+  padding: 1.25rem 0;
   z-index: 60;
-  background: rgba(10, 10, 10, 0.2);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
+  background: rgba(10, 10, 10, 0.25);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
   transform: translateZ(0);
 }
 
