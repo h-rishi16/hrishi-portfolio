@@ -1,22 +1,8 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 
-const generateShadows = (count) => {
-  let s = [];
-  for (let i = 0; i < count; i++) {
-    s.push(`${Math.floor(Math.random() * 200 - 50)}vw ${Math.floor(Math.random() * 200 - 50)}vh rgba(255, 255, 255, ${Math.random() * 0.8 + 0.2})`);
-  }
-  return s.join(', ');
-};
-
-const SHADOWS_1 = generateShadows(1200);
-const SHADOWS_2 = generateShadows(600);
-const SHADOWS_3 = generateShadows(300);
-
 const Stars = () => {
-  const layer1Refs = useRef([]);
-  const layer2Refs = useRef([]);
-  const layer3Refs = useRef([]);
+  const canvasRef = useRef(null);
   const [eggState, setEggState] = useState('normal');
   const [origin, setOrigin] = useState({ x: '50%', y: '50%' });
   const eggStateRef = useRef('normal');
@@ -32,8 +18,6 @@ const Stars = () => {
           }
         } else if (e.detail.state === 'normal') {
           setEggState('normal');
-          
-          // Freeze the physical drift for exactly the duration of the scale animation (600ms)
           setTimeout(() => {
             eggStateRef.current = 'normal';
           }, 600);
@@ -45,67 +29,118 @@ const Stars = () => {
   }, []);
 
   useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d', { alpha: true });
+    let rafId;
+
+    let cx = window.innerWidth / 2;
+    let cy = window.innerHeight / 2;
+
+    const resize = () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      cx = canvas.width / 2;
+      cy = canvas.height / 2;
+    };
+    window.addEventListener('resize', resize);
+    resize();
+
+    const generateStars = (count, layer) => {
+      const arr = [];
+      const spreadX = window.innerWidth * 3;
+      const spreadY = window.innerHeight * 3;
+      for (let i = 0; i < count; i++) {
+        arr.push({
+          x: Math.random() * spreadX - spreadX / 2,
+          y: Math.random() * spreadY - spreadY / 2,
+          z: Math.random() * 2000,
+          layer: layer,
+          size: layer === 1 ? 0.8 : layer === 2 ? 1.5 : 2.2
+        });
+      }
+      return arr;
+    };
+
+    const stars = [
+      ...generateStars(1200, 1),
+      ...generateStars(600, 2),
+      ...generateStars(300, 3)
+    ];
+
     let lastScrollY = window.scrollY;
     let lastTime = performance.now();
     let scrollVelocity = 0;
-    let z1 = 0, z2 = 0, z3 = 0;
-    let rafId;
 
     const tick = (now) => {
       const delta = Math.min(now - lastTime, 50);
       lastTime = now;
+      const dt = delta / 1000;
 
       const currentScrollY = window.scrollY;
       const scrollDelta = currentScrollY - lastScrollY;
       lastScrollY = currentScrollY;
+      
       scrollVelocity = scrollVelocity * 0.85 + scrollDelta * 0.15;
+      const thrust = scrollVelocity * 20;
 
-      const dt = delta / 1000;
-      let thrust = scrollVelocity * 20;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      const fov = 600;
 
       if (eggStateRef.current !== 'suck' && eggStateRef.current !== 'supernova_charge') {
-        z1 = (z1 + (10 + thrust) * dt) % 2000;
-        z2 = (z2 + (20 + thrust * 3) * dt) % 2000;
-        z3 = (z3 + (40 + thrust * 8) * dt) % 2000;
+        for (let i = 0; i < stars.length; i++) {
+          const star = stars[i];
 
-        if (z1 < 0) z1 += 2000;
-        if (z2 < 0) z2 += 2000;
-        if (z3 < 0) z3 += 2000;
+          let speed = 0;
+          if (star.layer === 1) speed = 10 + thrust;
+          else if (star.layer === 2) speed = 20 + thrust * 3;
+          else if (star.layer === 3) speed = 40 + thrust * 8;
 
-        const getOpacity = (z) => {
-          if (z < -900) return (z + 1000) / 100; // Quick fade in from -1000 to -900
-          if (z > 400) return Math.max(0, (600 - z) / 200); // Quick fade out from 400 to 600
-          return 1;
-        };
+          star.z -= speed * dt;
 
-        layer1Refs.current.forEach((ref, i) => {
-          if (ref) {
-            const z = ((z1 + i * 1000) % 2000) - 1000;
-            ref.style.transform = `translateZ(${z}px)`;
-            ref.style.opacity = getOpacity(z);
+          const spreadX = canvas.width * 3;
+          const spreadY = canvas.height * 3;
+
+          if (star.z <= 0) {
+            star.z += 2000;
+            star.x = Math.random() * spreadX - spreadX / 2;
+            star.y = Math.random() * spreadY - spreadY / 2;
+          } else if (star.z > 2000) {
+            star.z -= 2000;
+            star.x = Math.random() * spreadX - spreadX / 2;
+            star.y = Math.random() * spreadY - spreadY / 2;
           }
-        });
-        layer2Refs.current.forEach((ref, i) => {
-          if (ref) {
-            const z = ((z2 + i * 1000) % 2000) - 1000;
-            ref.style.transform = `translateZ(${z}px)`;
-            ref.style.opacity = getOpacity(z);
+
+          const scale = fov / (star.z + 1);
+          const projX = cx + star.x * scale;
+          const projY = cy + star.y * scale;
+
+          let opacity = 1;
+          if (star.z > 1900) {
+            opacity = (2000 - star.z) / 100; 
+          } else if (star.z < 400) {
+            opacity = star.z / 400;
           }
-        });
-        layer3Refs.current.forEach((ref, i) => {
-          if (ref) {
-            const z = ((z3 + i * 1000) % 2000) - 1000;
-            ref.style.transform = `translateZ(${z}px)`;
-            ref.style.opacity = getOpacity(z);
+
+          if (opacity > 0 && projX > 0 && projX < canvas.width && projY > 0 && projY < canvas.height) {
+            ctx.beginPath();
+            ctx.fillStyle = `rgba(255, 255, 255, ${opacity})`;
+            ctx.arc(projX, projY, Math.max(0.1, star.size * scale), 0, Math.PI * 2);
+            ctx.fill();
           }
-        });
+        }
       }
-
+      
       rafId = requestAnimationFrame(tick);
     };
 
     rafId = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(rafId);
+
+    return () => {
+      cancelAnimationFrame(rafId);
+      window.removeEventListener('resize', resize);
+    };
   }, []);
 
   return (
@@ -115,35 +150,10 @@ const Stars = () => {
         transition={{ duration: eggState === 'supernova_charge' ? 2.0 : 0.6, ease: eggState === 'normal' ? 'easeOut' : 'easeIn' }}
         style={{ position: 'absolute', inset: 0, transformOrigin: `${origin.x} ${origin.y}`, willChange: 'transform, opacity' }}
       >
-        {/* Layer 1 - Slowest */}
-        <div style={{ position: 'absolute', inset: 0, perspective: '600px' }}>
-          <div ref={el => layer1Refs.current[0] = el} style={{ position: 'absolute', inset: 0, willChange: 'transform' }}>
-            <div style={{ position: 'absolute', width: '1px', height: '1px', boxShadow: SHADOWS_1, background: 'transparent' }} />
-          </div>
-          <div ref={el => layer1Refs.current[1] = el} style={{ position: 'absolute', inset: 0, willChange: 'transform' }}>
-            <div style={{ position: 'absolute', width: '1px', height: '1px', boxShadow: SHADOWS_1, background: 'transparent' }} />
-          </div>
-        </div>
-
-        {/* Layer 2 - Medium */}
-        <div style={{ position: 'absolute', inset: 0, perspective: '600px' }}>
-          <div ref={el => layer2Refs.current[0] = el} style={{ position: 'absolute', inset: 0, willChange: 'transform' }}>
-            <div style={{ position: 'absolute', width: '2px', height: '2px', boxShadow: SHADOWS_2, background: 'transparent' }} />
-          </div>
-          <div ref={el => layer2Refs.current[1] = el} style={{ position: 'absolute', inset: 0, willChange: 'transform' }}>
-            <div style={{ position: 'absolute', width: '2px', height: '2px', boxShadow: SHADOWS_2, background: 'transparent' }} />
-          </div>
-        </div>
-
-        {/* Layer 3 - Fastest */}
-        <div style={{ position: 'absolute', inset: 0, perspective: '600px' }}>
-          <div ref={el => layer3Refs.current[0] = el} style={{ position: 'absolute', inset: 0, willChange: 'transform' }}>
-            <div style={{ position: 'absolute', width: '3px', height: '3px', boxShadow: SHADOWS_3, background: 'transparent' }} />
-          </div>
-          <div ref={el => layer3Refs.current[1] = el} style={{ position: 'absolute', inset: 0, willChange: 'transform' }}>
-            <div style={{ position: 'absolute', width: '3px', height: '3px', boxShadow: SHADOWS_3, background: 'transparent' }} />
-          </div>
-        </div>
+        <canvas 
+          ref={canvasRef} 
+          style={{ width: '100%', height: '100%', display: 'block' }} 
+        />
       </motion.div>
     </div>
   );
