@@ -9,9 +9,9 @@ const generateShadows = (count) => {
   return s.join(', ');
 };
 
-const SHADOWS_1 = generateShadows(600);
-const SHADOWS_2 = generateShadows(250);
-const SHADOWS_3 = generateShadows(100);
+const SHADOWS_1 = generateShadows(1200);
+const SHADOWS_2 = generateShadows(600);
+const SHADOWS_3 = generateShadows(300);
 
 const Stars = () => {
   const layer1Refs = useRef([]);
@@ -73,8 +73,8 @@ const Stars = () => {
         if (z3 < 0) z3 += 2000;
 
         const getOpacity = (z) => {
-          if (z < -800) return (z + 1000) / 200; // Fade in from the deep background
-          if (z > 200) return Math.max(0, (600 - z) / 400); // Fade out as it passes camera
+          if (z < -900) return (z + 1000) / 100; // Quick fade in from -1000 to -900
+          if (z > 400) return Math.max(0, (600 - z) / 200); // Quick fade out from 400 to 600
           return 1;
         };
 
