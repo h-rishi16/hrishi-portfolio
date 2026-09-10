@@ -72,14 +72,32 @@ const Stars = () => {
         if (z2 < 0) z2 += 2000;
         if (z3 < 0) z3 += 2000;
 
+        const getOpacity = (z) => {
+          if (z < -800) return (z + 1000) / 200; // Fade in from the deep background
+          if (z > 200) return Math.max(0, (600 - z) / 400); // Fade out as it passes camera
+          return 1;
+        };
+
         layer1Refs.current.forEach((ref, i) => {
-          if (ref) ref.style.transform = `translateZ(${((z1 + i * 1000) % 2000) - 1000}px)`;
+          if (ref) {
+            const z = ((z1 + i * 1000) % 2000) - 1000;
+            ref.style.transform = `translateZ(${z}px)`;
+            ref.style.opacity = getOpacity(z);
+          }
         });
         layer2Refs.current.forEach((ref, i) => {
-          if (ref) ref.style.transform = `translateZ(${((z2 + i * 1000) % 2000) - 1000}px)`;
+          if (ref) {
+            const z = ((z2 + i * 1000) % 2000) - 1000;
+            ref.style.transform = `translateZ(${z}px)`;
+            ref.style.opacity = getOpacity(z);
+          }
         });
         layer3Refs.current.forEach((ref, i) => {
-          if (ref) ref.style.transform = `translateZ(${((z3 + i * 1000) % 2000) - 1000}px)`;
+          if (ref) {
+            const z = ((z3 + i * 1000) % 2000) - 1000;
+            ref.style.transform = `translateZ(${z}px)`;
+            ref.style.opacity = getOpacity(z);
+          }
         });
       }
 
