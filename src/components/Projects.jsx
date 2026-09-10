@@ -7,14 +7,16 @@ const projectData = [
     category: 'Aerospace Engineering',
     description: 'Orbital Uncertainty & Risk Engine (OURE) for LEO collision avoidance. Features SGP4 propagation and Monte Carlo Pc estimation.',
     tech: ['Python', 'SciPy', 'Celery', 'Docker'],
-    link: 'https://github.com/h-rishi16/OURE'
+    link: 'https://github.com/h-rishi16/OURE',
+    demoLink: 'https://oure-pi.vercel.app'
   },
   {
     title: 'Sentinel Risk Intelligence',
     category: 'Financial Engineering',
     description: 'A high-performance quantitative risk management terminal for real-time fraud detection, credit risk modeling, and Monte Carlo VaR forecasting.',
     tech: ['Python', 'FastAPI', 'HTMX', 'Tailwind', 'XGBoost'],
-    link: 'https://github.com/h-rishi16/sentinel'
+    link: 'https://github.com/h-rishi16/sentinel',
+    demoLink: 'https://sentinel-risk-platform.onrender.com/'
   },
   {
     title: 'Loan Default Risk',
@@ -72,15 +74,24 @@ const Projects = () => {
                 </p>
               </div>
               
-              <h3 style={{ fontSize: '1.5rem', marginBottom: '0.75rem', fontWeight: 500, letterSpacing: '-0.01em', lineHeight: 1.3 }}>
-                {p.link !== '#' ? (
-                  <a href={p.link} target="_blank" rel="noreferrer" className="text-silver-gradient" style={{ textDecoration: 'none' }}>
-                    {p.title} ↗
-                  </a>
-                ) : (
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem', marginBottom: '0.75rem' }}>
+                <h3 style={{ fontSize: '1.5rem', margin: 0, fontWeight: 500, letterSpacing: '-0.01em', lineHeight: 1.3 }}>
                   <span className="text-silver-gradient">{p.title}</span>
-                )}
-              </h3>
+                </h3>
+                
+                <div style={{ display: 'flex', gap: '1.25rem', fontSize: '0.85rem' }}>
+                  {p.demoLink && (
+                    <a href={p.demoLink} target="_blank" rel="noreferrer" style={{ color: 'rgba(255,255,255,0.9)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.25rem', borderBottom: '1px solid rgba(255,255,255,0.3)', paddingBottom: '2px' }}>
+                      Live Demo ↗
+                    </a>
+                  )}
+                  {p.link !== '#' && (
+                    <a href={p.link} target="_blank" rel="noreferrer" style={{ color: 'rgba(255,255,255,0.5)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                      GitHub ↗
+                    </a>
+                  )}
+                </div>
+              </div>
               
               <p style={{ color: 'var(--text-secondary)', marginBottom: '1.5rem', lineHeight: 1.6, fontSize: '1rem', maxWidth: '700px' }}>
                 {p.description}
