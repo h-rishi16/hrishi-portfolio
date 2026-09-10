@@ -88,28 +88,30 @@ const Stars = () => {
 
       const fov = 600;
 
-      if (eggStateRef.current !== 'suck' && eggStateRef.current !== 'supernova_charge') {
         for (let i = 0; i < stars.length; i++) {
           const star = stars[i];
 
-          let speed = 0;
-          if (star.layer === 1) speed = 10 + thrust;
-          else if (star.layer === 2) speed = 20 + thrust * 3;
-          else if (star.layer === 3) speed = 40 + thrust * 8;
+          // Only move stars if not in easter egg mode
+          if (eggStateRef.current !== 'suck' && eggStateRef.current !== 'supernova_charge') {
+            let speed = 0;
+            if (star.layer === 1) speed = 10 + thrust;
+            else if (star.layer === 2) speed = 20 + thrust * 3;
+            else if (star.layer === 3) speed = 40 + thrust * 8;
 
-          star.z -= speed * dt;
+            star.z -= speed * dt;
 
-          const spreadX = canvas.width * 3;
-          const spreadY = canvas.height * 3;
+            const spreadX = canvas.width * 3;
+            const spreadY = canvas.height * 3;
 
-          if (star.z <= 0) {
-            star.z += 2000;
-            star.x = Math.random() * spreadX - spreadX / 2;
-            star.y = Math.random() * spreadY - spreadY / 2;
-          } else if (star.z > 2000) {
-            star.z -= 2000;
-            star.x = Math.random() * spreadX - spreadX / 2;
-            star.y = Math.random() * spreadY - spreadY / 2;
+            if (star.z <= 0) {
+              star.z += 2000;
+              star.x = Math.random() * spreadX - spreadX / 2;
+              star.y = Math.random() * spreadY - spreadY / 2;
+            } else if (star.z > 2000) {
+              star.z -= 2000;
+              star.x = Math.random() * spreadX - spreadX / 2;
+              star.y = Math.random() * spreadY - spreadY / 2;
+            }
           }
 
           const scale = fov / (star.z + 1);
@@ -130,7 +132,6 @@ const Stars = () => {
             ctx.fill();
           }
         }
-      }
       
       rafId = requestAnimationFrame(tick);
     };
