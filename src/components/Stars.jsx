@@ -120,30 +120,30 @@ const Stars = () => {
         {/* Layer 1 - Slowest */}
         <div style={{ position: 'absolute', inset: 0, perspective: '600px' }}>
           <div ref={el => layer1Refs.current[0] = el} style={{ position: 'absolute', inset: 0, willChange: 'transform, opacity' }}>
-            <div style={{ position: 'absolute', width: '1px', height: '1px', borderRadius: '50%', boxShadow: SHADOWS_1, background: 'transparent' }} />
+            <div style={{ position: 'absolute', width: '1px', height: '1px', boxShadow: SHADOWS_1, background: 'transparent' }} />
           </div>
           <div ref={el => layer1Refs.current[1] = el} style={{ position: 'absolute', inset: 0, willChange: 'transform, opacity' }}>
-            <div style={{ position: 'absolute', width: '1px', height: '1px', borderRadius: '50%', boxShadow: SHADOWS_1, background: 'transparent' }} />
+            <div style={{ position: 'absolute', width: '1px', height: '1px', boxShadow: SHADOWS_1, background: 'transparent' }} />
           </div>
         </div>
 
         {/* Layer 2 - Medium */}
         <div style={{ position: 'absolute', inset: 0, perspective: '600px' }}>
           <div ref={el => layer2Refs.current[0] = el} style={{ position: 'absolute', inset: 0, willChange: 'transform, opacity' }}>
-            <div style={{ position: 'absolute', width: '2px', height: '2px', borderRadius: '50%', boxShadow: SHADOWS_2, background: 'transparent' }} />
+            <div style={{ position: 'absolute', width: '2px', height: '2px', boxShadow: SHADOWS_2, background: 'transparent' }} />
           </div>
           <div ref={el => layer2Refs.current[1] = el} style={{ position: 'absolute', inset: 0, willChange: 'transform, opacity' }}>
-            <div style={{ position: 'absolute', width: '2px', height: '2px', borderRadius: '50%', boxShadow: SHADOWS_2, background: 'transparent' }} />
+            <div style={{ position: 'absolute', width: '2px', height: '2px', boxShadow: SHADOWS_2, background: 'transparent' }} />
           </div>
         </div>
 
         {/* Layer 3 - Fastest */}
         <div style={{ position: 'absolute', inset: 0, perspective: '600px' }}>
           <div ref={el => layer3Refs.current[0] = el} style={{ position: 'absolute', inset: 0, willChange: 'transform, opacity' }}>
-            <div style={{ position: 'absolute', width: '3px', height: '3px', borderRadius: '50%', boxShadow: SHADOWS_3, background: 'transparent' }} />
+            <div style={{ position: 'absolute', width: '3px', height: '3px', boxShadow: SHADOWS_3, background: 'transparent' }} />
           </div>
           <div ref={el => layer3Refs.current[1] = el} style={{ position: 'absolute', inset: 0, willChange: 'transform, opacity' }}>
-            <div style={{ position: 'absolute', width: '3px', height: '3px', borderRadius: '50%', boxShadow: SHADOWS_3, background: 'transparent' }} />
+            <div style={{ position: 'absolute', width: '3px', height: '3px', boxShadow: SHADOWS_3, background: 'transparent' }} />
           </div>
         </div>
       </motion.div>
