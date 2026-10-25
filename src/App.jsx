@@ -78,6 +78,19 @@ function App() {
     document.documentElement.style.backgroundColor = '';
   }, []);
 
+  const handleNavClick = (e, targetId) => {
+    e.preventDefault();
+    const el = document.getElementById(targetId);
+    if (!el) return;
+    const headerOffset = 70;
+    const elementPosition = el.getBoundingClientRect().top;
+    const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+    window.scrollTo({
+      top: offsetPosition,
+      behavior: 'smooth'
+    });
+  };
+
   return (
     <div key={resetKey} className={`app ${eggState === 'supernova_charge' ? 'charging-elements' : ''}`}>
       {isInverted && (
@@ -111,10 +124,10 @@ function App() {
             Hrishi.
           </a>
           <nav style={{ display: 'flex', gap: '1.5rem' }}>
-            <a href="#projects" className="nav-link">Projects</a>
-            <a href="#academics" className="nav-link">Academics</a>
-            <a href="#about" className="nav-link">About</a>
-            <a href="#contact" className="nav-link">Contact</a>
+            <a href="#projects" onClick={(e) => handleNavClick(e, 'projects')} className="nav-link">Projects</a>
+            <a href="#academics" onClick={(e) => handleNavClick(e, 'academics')} className="nav-link">Academics</a>
+            <a href="#about" onClick={(e) => handleNavClick(e, 'about')} className="nav-link">About</a>
+            <a href="#contact" onClick={(e) => handleNavClick(e, 'contact')} className="nav-link">Contact</a>
           </nav>
         </div>
       </header>
