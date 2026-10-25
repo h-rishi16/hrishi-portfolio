@@ -1,5 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+
 const About = () => {
   const skills = [
     'Python', 'Machine Learning', 'Data Science', 'Model Explainability', 
@@ -8,22 +9,35 @@ const About = () => {
 
   return (
     <section id="about" className="section container">
-      <h2 
+      <motion.h2 
         className="heading-lg" 
         style={{ textAlign: 'center', marginBottom: '5rem' }}
+        initial={{ opacity: 0, y: 30 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, amount: 0.5 }}
+        transition={{ duration: 0.8 }}
       >
         About Me
-      </h2>
+      </motion.h2>
         
       <div style={{ maxWidth: '800px', margin: '0 auto' }}>
-          <h3 
+          <motion.h3 
             className="text-silver-gradient" 
             style={{ fontSize: '1.5rem', marginBottom: '3rem', fontWeight: 400, letterSpacing: '-0.01em', lineHeight: 1.5 }}
+            initial={{ opacity: 0, y: 40 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.4 }}
+            transition={{ duration: 0.8 }}
           >
             I am Hrishikesh Joshi, a motivated and detail-oriented Computer Science student with hands-on experience in machine learning, data analysis, and software development.
-          </h3>
+          </motion.h3>
           
-          <div>
+          <motion.div
+            initial={{ opacity: 0, y: 40 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.4 }}
+            transition={{ duration: 0.8, delay: 0.2 }}
+          >
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.75rem' }}>
               <span style={{ width: '12px', height: '12px', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <span style={{ width: '4px', height: '4px', background: 'rgba(255,255,255,0.5)', borderRadius: '50%' }} />
@@ -44,7 +58,7 @@ const About = () => {
                 </div>
               ))}
             </div>
-          </div>
+          </motion.div>
         </div>
     </section>
   );
