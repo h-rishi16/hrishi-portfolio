@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { motion, useMotionValue, useSpring } from 'framer-motion';
 
 const Cursor = () => {
@@ -71,8 +71,7 @@ const Cursor = () => {
           width: 50,
           height: 50,
           borderRadius: '50%',
-          backdropFilter: 'blur(2px) contrast(1.8) brightness(1.1) saturate(1.2)',
-          WebkitBackdropFilter: 'blur(2px) contrast(1.8) brightness(1.1) saturate(1.2)',
+          background: 'rgba(255, 255, 255, 0.04)',
           border: '1px solid rgba(255, 255, 255, 0.4)',
           boxShadow: 'inset 0px 4px 10px rgba(255, 255, 255, 0.5), inset 0px -4px 10px rgba(0, 0, 0, 0.5), 0px 10px 20px rgba(0, 0, 0, 0.6)',
           pointerEvents: 'none',
@@ -96,8 +95,6 @@ const Cursor = () => {
         style={{
           position: 'fixed',
           borderRadius: '50%',
-          backdropFilter: 'blur(4px) contrast(1.2)',
-          WebkitBackdropFilter: 'blur(4px) contrast(1.2)',
           pointerEvents: 'none',
           zIndex: 9999,
           x: cursorX,

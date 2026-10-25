@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import Hero from './components/Hero';
 import Projects from './components/Projects';
 import Academics from './components/Academics';
@@ -13,7 +13,6 @@ function App() {
   const [isFlashing, setIsFlashing] = useState(false);
   const [flashColor, setFlashColor] = useState('white');
   const [eggState, setEggState] = useState('normal');
-  const [implosionOrigin, setImplosionOrigin] = useState({ x: 0, y: 0 });
   const [resetKey, setResetKey] = useState(0);
 
   useEffect(() => {
@@ -42,7 +41,6 @@ function App() {
     const handleEgg = (e) => {
       if (e.detail) {
         if (e.detail.state === 'supernova_charge') {
-          setImplosionOrigin({ x: e.detail.x, y: e.detail.y });
           setEggState('supernova_charge');
           
           setTimeout(() => {
@@ -78,6 +76,65 @@ function App() {
     document.documentElement.style.backgroundColor = '';
   }, []);
 
+  const smoothScrollTo = (targetY) => {
+    const startY = window.scrollY;
+    const diff = targetY - startY;
+    if (Math.abs(diff) < 2) return;
+
+    // Calibrated duration based on travel distance:
+    // Short hops (600px) take ~400ms; long cross-page leaps (3000px) take ~720ms.
+    // This caps peak velocity at ~4,000 px/sec, perfectly within Safari's GPU tile rasterization rate.
+    const duration = Math.min(750, Math.max(380, Math.abs(diff) * 0.16 + 280));
+    let startTime = null;
+    let animationId = null;
+
+    const cancel = () => {
+      if (animationId) {
+        cancelAnimationFrame(animationId);
+        animationId = null;
+      }
+      window.removeEventListener('wheel', cancel);
+      window.removeEventListener('touchmove', cancel);
+    };
+
+    window.addEventListener('wheel', cancel, { passive: true, once: true });
+    window.addEventListener('touchmove', cancel, { passive: true, once: true });
+
+    const step = (currentTime) => {
+      if (!startTime) startTime = currentTime;
+      const elapsed = currentTime - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+
+      // Smooth cubic ease-in-out curve
+      const ease = progress < 0.5
+        ? 4 * progress * progress * progress
+        : 1 - Math.pow(-2 * progress + 2, 3) / 2;
+
+      window.scrollTo(0, startY + diff * ease);
+
+      if (progress < 1) {
+        animationId = requestAnimationFrame(step);
+      } else {
+        cancel();
+      }
+    };
+
+    animationId = requestAnimationFrame(step);
+  };
+
+  const handleNavClick = (e, id) => {
+    e.preventDefault();
+    if (id === 'top') {
+      smoothScrollTo(0);
+      return;
+    }
+    const element = document.getElementById(id);
+    if (element) {
+      const top = Math.max(0, element.getBoundingClientRect().top + window.scrollY - 70);
+      smoothScrollTo(top);
+    }
+  };
+
   return (
     <div key={resetKey} className={`app ${eggState === 'supernova_charge' ? 'charging-elements' : ''}`}>
       {isInverted && (
@@ -102,19 +159,16 @@ function App() {
         <div className="container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <a
             href="#"
-            onClick={(e) => {
-              e.preventDefault();
-              window.scrollTo({ top: 0, behavior: 'smooth' });
-            }}
+            onClick={(e) => handleNavClick(e, 'top')}
             style={{ fontWeight: 700, fontSize: '1.25rem', fontFamily: 'var(--font-display)', letterSpacing: '-0.02em', color: 'var(--text-primary)', textDecoration: 'none' }}
           >
             Hrishi.
           </a>
           <nav style={{ display: 'flex', gap: '1.5rem' }}>
-            <a href="#projects" className="nav-link">Projects</a>
-            <a href="#academics" className="nav-link">Academics</a>
-            <a href="#about" className="nav-link">About</a>
-            <a href="#contact" className="nav-link">Contact</a>
+            <a href="#projects" onClick={(e) => handleNavClick(e, 'projects')} className="nav-link">Projects</a>
+            <a href="#academics" onClick={(e) => handleNavClick(e, 'academics')} className="nav-link">Academics</a>
+            <a href="#about" onClick={(e) => handleNavClick(e, 'about')} className="nav-link">About</a>
+            <a href="#contact" onClick={(e) => handleNavClick(e, 'contact')} className="nav-link">Contact</a>
           </nav>
         </div>
       </header>

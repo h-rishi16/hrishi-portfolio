@@ -1,62 +1,8 @@
-import React, { useMemo, useRef, useEffect, useState } from 'react';
-import { motion, useScroll, useVelocity, useSpring, useAnimationFrame, useMotionValue, useTransform } from 'framer-motion';
-
-const StarLayer = ({ count, size, baseSpeed, velocityMultiplier, initialZ = 0, eggStateRef }) => {
-  const shadows = useMemo(() => {
-    let s = [];
-    for (let i = 0; i < count; i++) {
-      // Wide edge-to-edge scatter so stars fill the entire viewport across all depths
-      s.push(`${Math.floor(Math.random() * 260 - 80)}vw ${Math.floor(Math.random() * 260 - 80)}vh rgba(255, 255, 255, ${Math.random() * 0.8 + 0.2})`);
-    }
-    return s.join(', ');
-  }, [count]);
-
-  const { scrollY } = useScroll();
-  const scrollVelocity = useVelocity(scrollY);
-  const smoothVelocity = useSpring(scrollVelocity, { damping: 50, stiffness: 400 });
-  const zPos = useMotionValue(initialZ);
-
-  useAnimationFrame((t, delta) => {
-    if (eggStateRef.current === 'suck' || eggStateRef.current === 'supernova_charge') return;
-
-    let moveBy = baseSpeed * (delta / 1000);
-    
-    // Scroll down = positive velocity. Forward motion on scroll down, backward on scroll up.
-    let velocityMove = smoothVelocity.get() * (delta / 1000) * velocityMultiplier;
-    // Clamp to prevent single-frame spikes from choking GPU rasterization at the focal plane
-    velocityMove = Math.max(-100, Math.min(100, velocityMove));
-    moveBy += velocityMove;
-    
-    zPos.set((zPos.get() + moveBy) % 2000);
-  });
-
-  // Original layer translates from -1000 to 1000
-  const transform1 = useTransform(zPos, (z) => {
-    let rawZ = (z % 2000);
-    if (rawZ < 0) rawZ += 2000;
-    return `translate3d(0, 0, ${rawZ - 1000}px)`;
-  });
-
-  // Duplicate layer spaced exactly 2000px behind (-3000 to -1000)
-  const transform2 = useTransform(zPos, (z) => {
-    let rawZ = (z % 2000);
-    if (rawZ < 0) rawZ += 2000;
-    return `translate3d(0, 0, ${rawZ - 3000}px)`;
-  });
-
-  return (
-    <div style={{ position: 'absolute', inset: 0, perspective: '600px', transformStyle: 'preserve-3d' }}>
-      <motion.div style={{ position: 'absolute', inset: 0, transform: transform1, willChange: 'transform' }}>
-        <div style={{ position: 'absolute', width: size, height: size, boxShadow: shadows, background: 'transparent' }} />
-      </motion.div>
-      <motion.div style={{ position: 'absolute', inset: 0, transform: transform2, willChange: 'transform' }}>
-        <div style={{ position: 'absolute', width: size, height: size, boxShadow: shadows, background: 'transparent' }} />
-      </motion.div>
-    </div>
-  );
-};
+import { useRef, useEffect, useState } from 'react';
+import { motion } from 'framer-motion';
 
 const Stars = () => {
+  const canvasRef = useRef(null);
   const [eggState, setEggState] = useState('normal');
   const [origin, setOrigin] = useState({ x: '50%', y: '50%' });
   const eggStateRef = useRef('normal');
@@ -72,16 +18,140 @@ const Stars = () => {
           }
         } else if (e.detail.state === 'normal') {
           setEggState('normal');
-          
-          // Freeze the physical drift for exactly the duration of the scale animation (600ms)
-          setTimeout(() => {
-            eggStateRef.current = 'normal';
-          }, 600);
+          eggStateRef.current = 'normal';
         }
       }
     };
     window.addEventListener('EASTER_EGG', handleEgg);
     return () => window.removeEventListener('EASTER_EGG', handleEgg);
+  }, []);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d', { alpha: true });
+    if (!ctx) return;
+
+    let animationFrameId;
+    let width = (canvas.width = window.innerWidth);
+    let height = (canvas.height = window.innerHeight);
+
+    const handleResize = () => {
+      if (!canvas) return;
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      width = window.innerWidth;
+      height = window.innerHeight;
+      canvas.width = width * dpr;
+      canvas.height = height * dpr;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    };
+
+    handleResize();
+    window.addEventListener('resize', handleResize);
+
+    // Exact 3-tiered star distribution matching original aesthetic (900 stars total)
+    // Tier 1: 600 stars, 1px square, subtle depth
+    // Tier 2: 200 stars, 2px square, mid-field
+    // Tier 3: 100 stars, 3px square, foreground warp
+    const starConfigs = [
+      { count: 600, size: 1, baseSpeed: 50, velocityMult: 2.5 },
+      { count: 200, size: 2, baseSpeed: 100, velocityMult: 5.0 },
+      { count: 100, size: 3, baseSpeed: 250, velocityMult: 12.5 },
+    ];
+
+    const stars = [];
+    starConfigs.forEach((tier) => {
+      for (let i = 0; i < tier.count; i++) {
+        stars.push({
+          x: (Math.random() - 0.5) * width * 3,
+          y: (Math.random() - 0.5) * height * 3,
+          z: Math.random() * 2000 + 1,
+          baseSize: tier.size,
+          baseSpeed: tier.baseSpeed,
+          velocityMult: tier.velocityMult,
+          alpha: Math.random() * 0.8 + 0.2, // exact original brightness distribution
+        });
+      }
+    });
+
+    let lastTime = performance.now();
+    let lastScrollY = window.scrollY;
+    let smoothVelocity = 0;
+
+    const render = (time) => {
+      const dt = Math.min((time - lastTime) / 1000, 0.1);
+      lastTime = time;
+
+      // Real-time trackpad / scroll velocity tracking with smooth lerp
+      const currentScrollY = window.scrollY;
+      const instantVelocity = (currentScrollY - lastScrollY) / (dt || 0.016);
+      lastScrollY = currentScrollY;
+
+      // Smooth decay & spring-like tracking
+      smoothVelocity += (instantVelocity - smoothVelocity) * Math.min(1, dt * 10);
+
+      ctx.clearRect(0, 0, width, height);
+
+      const fov = 600;
+      const centerX = width / 2;
+      const centerY = height / 2;
+      const isEggActive = eggStateRef.current === 'suck' || eggStateRef.current === 'supernova_charge';
+
+      for (let i = 0; i < stars.length; i++) {
+        const star = stars[i];
+
+        if (!isEggActive) {
+          // Dynamic warp speed: responsive 1-to-1 parallax with trackpad and link clicks
+          let speed = star.baseSpeed + (smoothVelocity * star.velocityMult * 0.3);
+          // High-dynamic clamp: allows vivid warp acceleration without glitchy teleportation
+          speed = Math.max(-2000, Math.min(4500, speed));
+          star.z -= speed * dt;
+
+          // Infinite independent recycling:
+          // When a star flies past the camera (Z <= 60), recycle back to deep space (Z = 2000)
+          if (star.z <= 60) {
+            star.z += 1940;
+            star.x = (Math.random() - 0.5) * width * 3;
+            star.y = (Math.random() - 0.5) * height * 3;
+          } else if (star.z > 2000) {
+            star.z -= 1940;
+          }
+        }
+
+        // True 3D perspective projection
+        const scale = fov / star.z;
+        const screenX = centerX + star.x * scale;
+        const screenY = centerY + star.y * scale;
+
+        // Skip rendering if completely offscreen
+        if (screenX < -20 || screenX > width + 20 || screenY < -20 || screenY > height + 20) {
+          continue;
+        }
+
+        // Near-plane dissolve: smooth fade between Z = 60 and Z = 260
+        // Prevents stars from expanding into oversized blocks near the camera
+        let renderAlpha = star.alpha;
+        if (star.z < 260) {
+          renderAlpha *= Math.max(0, (star.z - 60) / 200);
+        }
+
+        if (renderAlpha <= 0.01) continue;
+
+        // Render crisp square pixel stars (exact Path A aesthetic)
+        const renderSize = Math.max(1, Math.round(star.baseSize * Math.min(scale, 1.8)));
+        ctx.fillStyle = `rgba(255, 255, 255, ${renderAlpha})`;
+        ctx.fillRect(Math.floor(screenX), Math.floor(screenY), renderSize, renderSize);
+      }
+
+      animationFrameId = requestAnimationFrame(render);
+    };
+
+    animationFrameId = requestAnimationFrame(render);
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      cancelAnimationFrame(animationFrameId);
+    };
   }, []);
 
   return (
@@ -101,9 +171,16 @@ const Stars = () => {
           transformOrigin: `${origin.x} ${origin.y}`
         }}
       >
-        <StarLayer count={600} size="1px" baseSpeed={50} velocityMultiplier={2.5} initialZ={800} eggStateRef={eggStateRef} />
-        <StarLayer count={200} size="2px" baseSpeed={100} velocityMultiplier={5.0} initialZ={1200} eggStateRef={eggStateRef} />
-        <StarLayer count={100} size="3px" baseSpeed={250} velocityMultiplier={12.5} initialZ={500} eggStateRef={eggStateRef} />
+        <canvas
+          ref={canvasRef}
+          style={{
+            position: 'absolute',
+            inset: 0,
+            width: '100%',
+            height: '100%',
+            pointerEvents: 'none'
+          }}
+        />
       </motion.div>
     </div>
   );

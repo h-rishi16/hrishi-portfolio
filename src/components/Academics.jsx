@@ -27,10 +27,10 @@ const Academics = () => {
       <motion.h2
         className="heading-lg"
         style={{ textAlign: "center", marginBottom: "5rem" }}
-        initial={{ opacity: 0, y: 30 }}
+        initial={{ opacity: 0, y: 15 }}
         whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, amount: 0.5 }}
-        transition={{ duration: 0.8 }}
+        viewport={{ once: true, amount: 0.2 }}
+        transition={{ duration: 0.6 }}
       >
         Academics
       </motion.h2>
@@ -48,10 +48,10 @@ const Academics = () => {
           <motion.div
             key={i}
             style={{ display: "flex", flexDirection: "column" }}
-            initial={{ opacity: 0, y: 40 }}
+            initial={{ opacity: 0, y: 15 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, amount: 0.5 }}
-            transition={{ duration: 0.8 }}
+            viewport={{ once: true, amount: 0.2 }}
+            transition={{ duration: 0.6 }}
           >
             <div
               style={{

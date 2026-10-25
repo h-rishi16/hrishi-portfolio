@@ -27,7 +27,6 @@
 }
 
 html {
-  scroll-behavior: smooth !important;
   scroll-padding-top: 70px;
 }
 
@@ -73,11 +72,10 @@ body {
 
 .ambient-glow {
   position: absolute;
-  width: 500px;
-  height: 200px;
+  width: 600px;
+  height: 300px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.015);
-  filter: blur(100px);
+  background: radial-gradient(ellipse at center, rgba(255, 255, 255, 0.035) 0%, rgba(255, 255, 255, 0.01) 40%, transparent 70%);
   z-index: 0;
   pointer-events: none;
 }
@@ -88,6 +86,7 @@ body {
   -webkit-background-clip: text;
   color: transparent;
   animation: shine 4s linear infinite;
+  will-change: background-position;
 }
 
 @keyframes shine {
