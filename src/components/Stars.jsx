@@ -1,39 +1,60 @@
-import React, { useRef, useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
+import React, { useMemo, useRef, useEffect, useState } from 'react';
+import { motion, useScroll, useVelocity, useSpring, useAnimationFrame, useMotionValue, useTransform } from 'framer-motion';
 
-const generateShadows = (count) => {
-  let s = [];
-  for (let i = 0; i < count; i++) {
-    s.push(`${Math.floor(Math.random() * 200 - 50)}vw ${Math.floor(Math.random() * 200 - 50)}vh rgba(255, 255, 255, ${Math.random() * 0.8 + 0.2})`);
-  }
-  return s.join(', ');
-};
+const StarLayer = ({ count, size, baseSpeed, velocityMultiplier, eggStateRef }) => {
+  const shadows = useMemo(() => {
+    let s = [];
+    for (let i = 0; i < count; i++) {
+      // Scatter stars in a wide area so they don't clip out when zooming past the camera
+      s.push(`${Math.floor(Math.random() * 200 - 50)}vw ${Math.floor(Math.random() * 200 - 50)}vh rgba(255, 255, 255, ${Math.random() * 0.8 + 0.2})`);
+    }
+    return s.join(', ');
+  }, [count]);
 
-const SHADOWS_1 = generateShadows(500);
-const SHADOWS_2 = generateShadows(210);
-const SHADOWS_3 = generateShadows(90);
+  const { scrollY } = useScroll();
+  const scrollVelocity = useVelocity(scrollY);
+  const smoothVelocity = useSpring(scrollVelocity, { damping: 50, stiffness: 400 });
+  const zPos = useMotionValue(0);
 
-// Smooth, continuous depth opacity curve:
-// 1. Far wrap (-1000px to -800px): fades in smoothly (0 -> 1) over 200px (zero pop-in when wrapping)
-// 2. Stable visible sky (-800px to +250px): 100% full brilliance across the entire screen
-// 3. Near camera (+250px to +450px): smoothly dissolves before camera eye (600px)
-const getLayerOpacity = (z) => {
-  if (z < -800) {
-    return Math.max(0, (z + 1000) / 200);
-  }
-  if (z <= 250) {
-    return 1;
-  }
-  if (z < 450) {
-    return Math.max(0, (450 - z) / 200);
-  }
-  return 0;
+  useAnimationFrame((t, delta) => {
+    if (eggStateRef.current === 'suck' || eggStateRef.current === 'supernova_charge') return;
+
+    let moveBy = baseSpeed * (delta / 1000);
+    
+    // Scroll down = positive velocity. Forward motion on scroll down, backward on scroll up.
+    let velocityMove = smoothVelocity.get() * (delta / 1000) * velocityMultiplier;
+    moveBy += velocityMove;
+    
+    zPos.set((zPos.get() + moveBy) % 2000);
+  });
+
+  // Original layer translates from -1000 to 1000
+  const transform1 = useTransform(zPos, (z) => {
+    let rawZ = (z % 2000);
+    if (rawZ < 0) rawZ += 2000;
+    return `translate3d(0, 0, ${rawZ - 1000}px)`;
+  });
+
+  // Duplicate layer spaced exactly 2000px behind (-3000 to -1000)
+  const transform2 = useTransform(zPos, (z) => {
+    let rawZ = (z % 2000);
+    if (rawZ < 0) rawZ += 2000;
+    return `translate3d(0, 0, ${rawZ - 3000}px)`;
+  });
+
+  return (
+    <div style={{ position: 'absolute', inset: 0, perspective: '600px', transformStyle: 'preserve-3d' }}>
+      <motion.div style={{ position: 'absolute', inset: 0, transform: transform1, willChange: 'transform' }}>
+        <div style={{ position: 'absolute', width: size, height: size, boxShadow: shadows, background: 'transparent' }} />
+      </motion.div>
+      <motion.div style={{ position: 'absolute', inset: 0, transform: transform2, willChange: 'transform' }}>
+        <div style={{ position: 'absolute', width: size, height: size, boxShadow: shadows, background: 'transparent' }} />
+      </motion.div>
+    </div>
+  );
 };
 
 const Stars = () => {
-  const layer1Refs = useRef([]);
-  const layer2Refs = useRef([]);
-  const layer3Refs = useRef([]);
   const [eggState, setEggState] = useState('normal');
   const [origin, setOrigin] = useState({ x: '50%', y: '50%' });
   const eggStateRef = useRef('normal');
@@ -61,99 +82,27 @@ const Stars = () => {
     return () => window.removeEventListener('EASTER_EGG', handleEgg);
   }, []);
 
-  useEffect(() => {
-    let lastScrollY = window.scrollY;
-    let lastTime = performance.now();
-    let scrollVelocity = 0;
-    let smoothVelocity = 0;
-    let z1 = 400, z2 = 700, z3 = 1100;
-    let rafId;
-
-    const tick = (now) => {
-      const delta = Math.min(now - lastTime, 50);
-      lastTime = now;
-      const dt = delta / 1000;
-
-      const currentScrollY = window.scrollY;
-      const scrollDelta = currentScrollY - lastScrollY;
-      lastScrollY = currentScrollY;
-
-      // Two-tier fluid momentum filter:
-      // 1. Raw impulse from scroll delta
-      scrollVelocity = scrollVelocity * 0.82 + (scrollDelta * 18) * 0.18;
-      // 2. Exponential critically damped lerp for buttery ProMotion smoothness (frame-rate independent)
-      const lerpFactor = 1 - Math.exp(-dt * 14);
-      smoothVelocity += (scrollVelocity - smoothVelocity) * lerpFactor;
-
-      const thrust = smoothVelocity;
-
-      if (eggStateRef.current !== 'suck' && eggStateRef.current !== 'supernova_charge') {
-        // Balanced, harmonious parallax speeds: 1x, 2.2x, 4.5x with silky smooth forward/backward drift
-        z1 = (z1 + (12 + thrust) * dt) % 2000;
-        z2 = (z2 + (24 + thrust * 2.2) * dt) % 2000;
-        z3 = (z3 + (48 + thrust * 4.5) * dt) % 2000;
-
-        if (z1 < 0) z1 += 2000;
-        if (z2 < 0) z2 += 2000;
-        if (z3 < 0) z3 += 2000;
-
-        const updateLayer = (refs, z) => {
-          refs.forEach((ref, i) => {
-            if (!ref) return;
-            const layerZ = ((z + i * 1000) % 2000) - 1000;
-            ref.style.transform = `translate3d(0, 0, ${layerZ}px)`;
-            ref.style.opacity = getLayerOpacity(layerZ);
-          });
-        };
-
-        updateLayer(layer1Refs.current, z1);
-        updateLayer(layer2Refs.current, z2);
-        updateLayer(layer3Refs.current, z3);
-      }
-
-      rafId = requestAnimationFrame(tick);
-    };
-
-    rafId = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(rafId);
-  }, []);
-
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: -2, overflow: 'hidden', background: 'radial-gradient(ellipse at bottom, #0f0f13 0%, #000000 100%)' }}>
       <motion.div
-        animate={{ scale: (eggState === 'suck' || eggState === 'supernova_charge' || eggState === 'supernova_explode') ? 0.01 : 1, opacity: (eggState === 'suck' || eggState === 'supernova_charge' || eggState === 'supernova_explode') ? 0.01 : 1 }}
-        transition={{ duration: eggState === 'supernova_charge' ? 2.0 : 0.6, ease: eggState === 'normal' ? 'easeOut' : 'easeIn' }}
-        style={{ position: 'absolute', inset: 0, transformOrigin: `${origin.x} ${origin.y}`, willChange: 'transform, opacity' }}
+        animate={{
+          scale: (eggState === 'suck' || eggState === 'supernova_charge' || eggState === 'supernova_explode') ? 0.01 : 1,
+          opacity: (eggState === 'suck' || eggState === 'supernova_charge' || eggState === 'supernova_explode') ? 0.01 : 1
+        }}
+        transition={{
+          duration: eggState === 'supernova_charge' ? 2.0 : 0.6,
+          ease: eggState === 'normal' ? 'easeOut' : 'easeIn'
+        }}
+        style={{
+          position: 'absolute',
+          inset: 0,
+          transformOrigin: `${origin.x} ${origin.y}`,
+          willChange: 'transform, opacity'
+        }}
       >
-        {/* Layer 1 - Slowest */}
-        <div style={{ position: 'absolute', inset: 0, perspective: '600px' }}>
-          <div ref={el => layer1Refs.current[0] = el} style={{ position: 'absolute', inset: 0, willChange: 'transform, opacity' }}>
-            <div style={{ position: 'absolute', width: '1px', height: '1px', boxShadow: SHADOWS_1, background: 'transparent' }} />
-          </div>
-          <div ref={el => layer1Refs.current[1] = el} style={{ position: 'absolute', inset: 0, willChange: 'transform, opacity' }}>
-            <div style={{ position: 'absolute', width: '1px', height: '1px', boxShadow: SHADOWS_1, background: 'transparent' }} />
-          </div>
-        </div>
-
-        {/* Layer 2 - Medium */}
-        <div style={{ position: 'absolute', inset: 0, perspective: '600px' }}>
-          <div ref={el => layer2Refs.current[0] = el} style={{ position: 'absolute', inset: 0, willChange: 'transform, opacity' }}>
-            <div style={{ position: 'absolute', width: '2px', height: '2px', boxShadow: SHADOWS_2, background: 'transparent' }} />
-          </div>
-          <div ref={el => layer2Refs.current[1] = el} style={{ position: 'absolute', inset: 0, willChange: 'transform, opacity' }}>
-            <div style={{ position: 'absolute', width: '2px', height: '2px', boxShadow: SHADOWS_2, background: 'transparent' }} />
-          </div>
-        </div>
-
-        {/* Layer 3 - Fastest */}
-        <div style={{ position: 'absolute', inset: 0, perspective: '600px' }}>
-          <div ref={el => layer3Refs.current[0] = el} style={{ position: 'absolute', inset: 0, willChange: 'transform, opacity' }}>
-            <div style={{ position: 'absolute', width: '3px', height: '3px', boxShadow: SHADOWS_3, background: 'transparent' }} />
-          </div>
-          <div ref={el => layer3Refs.current[1] = el} style={{ position: 'absolute', inset: 0, willChange: 'transform, opacity' }}>
-            <div style={{ position: 'absolute', width: '3px', height: '3px', boxShadow: SHADOWS_3, background: 'transparent' }} />
-          </div>
-        </div>
+        <StarLayer count={600} size="1px" baseSpeed={50} velocityMultiplier={5.0} eggStateRef={eggStateRef} />
+        <StarLayer count={200} size="2px" baseSpeed={100} velocityMultiplier={10.0} eggStateRef={eggStateRef} />
+        <StarLayer count={100} size="3px" baseSpeed={250} velocityMultiplier={25.0} eggStateRef={eggStateRef} />
       </motion.div>
     </div>
   );
