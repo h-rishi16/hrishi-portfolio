@@ -100,9 +100,9 @@ const Stars = () => {
           willChange: 'transform, opacity'
         }}
       >
-        <StarLayer count={600} size="1px" baseSpeed={50} velocityMultiplier={5.0} eggStateRef={eggStateRef} />
-        <StarLayer count={200} size="2px" baseSpeed={100} velocityMultiplier={10.0} eggStateRef={eggStateRef} />
-        <StarLayer count={100} size="3px" baseSpeed={250} velocityMultiplier={25.0} eggStateRef={eggStateRef} />
+        <StarLayer count={250} size="1px" baseSpeed={50} velocityMultiplier={5.0} eggStateRef={eggStateRef} />
+        <StarLayer count={100} size="2px" baseSpeed={100} velocityMultiplier={10.0} eggStateRef={eggStateRef} />
+        <StarLayer count={50} size="3px" baseSpeed={250} velocityMultiplier={25.0} eggStateRef={eggStateRef} />
       </motion.div>
     </div>
   );
