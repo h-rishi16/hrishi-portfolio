@@ -1,12 +1,12 @@
 import React, { useMemo, useRef, useEffect, useState } from 'react';
 import { motion, useScroll, useVelocity, useSpring, useAnimationFrame, useMotionValue, useTransform } from 'framer-motion';
 
-const StarLayer = ({ count, size, baseSpeed, velocityMultiplier, eggStateRef }) => {
+const StarLayer = ({ count, size, baseSpeed, velocityMultiplier, initialZ = 0, eggStateRef }) => {
   const shadows = useMemo(() => {
     let s = [];
     for (let i = 0; i < count; i++) {
-      // Scatter stars with comfortable margin beyond viewport without bloating GPU texture size
-      s.push(`${Math.floor(Math.random() * 120 - 10)}vw ${Math.floor(Math.random() * 120 - 10)}vh rgba(255, 255, 255, ${Math.random() * 0.8 + 0.2})`);
+      // Wide edge-to-edge scatter so stars fill the entire viewport across all depths
+      s.push(`${Math.floor(Math.random() * 260 - 80)}vw ${Math.floor(Math.random() * 260 - 80)}vh rgba(255, 255, 255, ${Math.random() * 0.8 + 0.2})`);
     }
     return s.join(', ');
   }, [count]);
@@ -14,7 +14,7 @@ const StarLayer = ({ count, size, baseSpeed, velocityMultiplier, eggStateRef }) 
   const { scrollY } = useScroll();
   const scrollVelocity = useVelocity(scrollY);
   const smoothVelocity = useSpring(scrollVelocity, { damping: 50, stiffness: 400 });
-  const zPos = useMotionValue(0);
+  const zPos = useMotionValue(initialZ);
 
   useAnimationFrame((t, delta) => {
     if (eggStateRef.current === 'suck' || eggStateRef.current === 'supernova_charge') return;
@@ -101,9 +101,9 @@ const Stars = () => {
           transformOrigin: `${origin.x} ${origin.y}`
         }}
       >
-        <StarLayer count={600} size="1px" baseSpeed={50} velocityMultiplier={5.0} eggStateRef={eggStateRef} />
-        <StarLayer count={200} size="2px" baseSpeed={100} velocityMultiplier={10.0} eggStateRef={eggStateRef} />
-        <StarLayer count={100} size="3px" baseSpeed={250} velocityMultiplier={25.0} eggStateRef={eggStateRef} />
+        <StarLayer count={600} size="1px" baseSpeed={50} velocityMultiplier={5.0} initialZ={800} eggStateRef={eggStateRef} />
+        <StarLayer count={200} size="2px" baseSpeed={100} velocityMultiplier={10.0} initialZ={1200} eggStateRef={eggStateRef} />
+        <StarLayer count={100} size="3px" baseSpeed={250} velocityMultiplier={25.0} initialZ={500} eggStateRef={eggStateRef} />
       </motion.div>
     </div>
   );
