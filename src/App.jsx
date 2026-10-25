@@ -1,5 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
-import Lenis from 'lenis';
+import React, { useState, useEffect } from 'react';
 import Hero from './components/Hero';
 import Projects from './components/Projects';
 import Academics from './components/Academics';
@@ -16,92 +15,6 @@ function App() {
   const [eggState, setEggState] = useState('normal');
   const [implosionOrigin, setImplosionOrigin] = useState({ x: 0, y: 0 });
   const [resetKey, setResetKey] = useState(0);
-  const lenisRef = useRef(null);
-
-  useEffect(() => {
-    const lenis = new Lenis({
-      lerp: 0.12,
-      smoothWheel: true,
-      syncTouch: false,
-      wheelMultiplier: 1.0,
-    });
-    lenis.resize();
-    lenisRef.current = lenis;
-
-    let rafId;
-    function raf(time) {
-      lenis.raf(time);
-      rafId = requestAnimationFrame(raf);
-    }
-    rafId = requestAnimationFrame(raf);
-
-    const handleScrollKeys = (e) => {
-      const tag = document.activeElement?.tagName?.toUpperCase();
-      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || document.activeElement?.isContentEditable) {
-        return;
-      }
-
-      const ARROW_STEP = 100;
-      if (e.key === 'ArrowDown') {
-        e.preventDefault();
-        const currentTarget = (lenis.isScrolling ? lenis.targetScroll : lenis.scroll) ?? lenis.scroll ?? 0;
-        const maxScroll = lenis.limit || (document.documentElement.scrollHeight - window.innerHeight);
-        const target = Math.min(currentTarget + ARROW_STEP, maxScroll);
-        lenis.scrollTo(target, {
-          lerp: 0.18,
-          lock: false,
-        });
-      } else if (e.key === 'ArrowUp') {
-        e.preventDefault();
-        const currentTarget = (lenis.isScrolling ? lenis.targetScroll : lenis.scroll) ?? lenis.scroll ?? 0;
-        const target = Math.max(currentTarget - ARROW_STEP, 0);
-        lenis.scrollTo(target, {
-          lerp: 0.18,
-          lock: false,
-        });
-      } else if (e.key === 'PageDown' || (e.key === ' ' && !e.shiftKey)) {
-        e.preventDefault();
-        const currentTarget = (lenis.isScrolling ? lenis.targetScroll : lenis.scroll) ?? lenis.scroll ?? 0;
-        const maxScroll = lenis.limit || (document.documentElement.scrollHeight - window.innerHeight);
-        const target = Math.min(currentTarget + window.innerHeight * 0.8, maxScroll);
-        lenis.scrollTo(target, {
-          lerp: 0.12,
-          lock: false,
-        });
-      } else if (e.key === 'PageUp' || (e.key === ' ' && e.shiftKey)) {
-        e.preventDefault();
-        const currentTarget = (lenis.isScrolling ? lenis.targetScroll : lenis.scroll) ?? lenis.scroll ?? 0;
-        const target = Math.max(currentTarget - window.innerHeight * 0.8, 0);
-        lenis.scrollTo(target, {
-          lerp: 0.12,
-          lock: false,
-        });
-      } else if (e.key === 'Home') {
-        e.preventDefault();
-        lenis.scrollTo(0, { lerp: 0.14 });
-      } else if (e.key === 'End') {
-        e.preventDefault();
-        lenis.scrollTo(lenis.limit, { lerp: 0.14 });
-      }
-    };
-
-    window.addEventListener('keydown', handleScrollKeys);
-
-    return () => {
-      window.removeEventListener('keydown', handleScrollKeys);
-      cancelAnimationFrame(rafId);
-      lenis.destroy();
-      lenisRef.current = null;
-    };
-  }, []);
-
-  useEffect(() => {
-    if (lenisRef.current) {
-      setTimeout(() => {
-        lenisRef.current?.resize();
-      }, 50);
-    }
-  }, [resetKey]);
 
   useEffect(() => {
     const handleReset = () => setResetKey(prev => prev + 1);
@@ -165,21 +78,6 @@ function App() {
     document.documentElement.style.backgroundColor = '';
   }, []);
 
-  const handleNavClick = (e, id) => {
-    e.preventDefault();
-    const el = document.getElementById(id);
-    if (!el) return;
-    if (lenisRef.current) {
-      lenisRef.current.scrollTo(el, {
-        offset: -60,
-        duration: 0.35,
-        easing: (t) => 1 - Math.pow(1 - t, 3),
-      });
-    } else {
-      el.scrollIntoView({ behavior: 'smooth' });
-    }
-  };
-
   return (
     <div key={resetKey} className={`app ${eggState === 'supernova_charge' ? 'charging-elements' : ''}`}>
       {isInverted && (
@@ -206,24 +104,17 @@ function App() {
             href="#"
             onClick={(e) => {
               e.preventDefault();
-              if (lenisRef.current) {
-                lenisRef.current.scrollTo(0, {
-                  duration: 0.35,
-                  easing: (t) => 1 - Math.pow(1 - t, 3),
-                });
-              } else {
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-              }
+              window.scrollTo({ top: 0, behavior: 'smooth' });
             }}
             style={{ fontWeight: 700, fontSize: '1.25rem', fontFamily: 'var(--font-display)', letterSpacing: '-0.02em', color: 'var(--text-primary)', textDecoration: 'none' }}
           >
             Hrishi.
           </a>
           <nav style={{ display: 'flex', gap: '1.5rem' }}>
-            <a href="#projects" onClick={(e) => handleNavClick(e, 'projects')} className="nav-link">Projects</a>
-            <a href="#academics" onClick={(e) => handleNavClick(e, 'academics')} className="nav-link">Academics</a>
-            <a href="#about" onClick={(e) => handleNavClick(e, 'about')} className="nav-link">About</a>
-            <a href="#contact" onClick={(e) => handleNavClick(e, 'contact')} className="nav-link">Contact</a>
+            <a href="#projects" className="nav-link">Projects</a>
+            <a href="#academics" className="nav-link">Academics</a>
+            <a href="#about" className="nav-link">About</a>
+            <a href="#contact" className="nav-link">Contact</a>
           </nav>
         </div>
       </header>
