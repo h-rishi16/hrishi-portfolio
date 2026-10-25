@@ -13,19 +13,19 @@ const SHADOWS_1 = generateShadows(600);
 const SHADOWS_2 = generateShadows(250);
 const SHADOWS_3 = generateShadows(100);
 
-// Hybrid Cosmic Horizon & Photonic Distance Falloff:
-// 1. Spawns deep in the void at -2500px, emerging with smooth photonic attenuation (0.0 -> 1.0)
-// 2. Sustains rock-solid, constant brilliance across the entire visible sky (-1700px to +50px)
-// 3. Gently dissolves (+50px to +250px) well before the camera eye (perspective: 600px)
+// Boundary-only fade on the original [-1000px, +1000px] depth:
+// 1. Far wrap (-1000px to -750px): fades in smoothly from 0.0 to 1.0 (zero pop-in when wrapping)
+// 2. Full visible sky (-750px to +350px): 100% full, solid brilliance
+// 3. Near camera (+350px to +550px): dissolves before camera plane (600px) so stars never block the screen
 const getLayerOpacity = (z) => {
-  if (z < -1700) {
-    return Math.max(0, (z + 2500) / 800);
+  if (z < -750) {
+    return Math.max(0, (z + 1000) / 250);
   }
-  if (z <= 50) {
+  if (z <= 350) {
     return 1;
   }
-  if (z < 250) {
-    return Math.max(0, (250 - z) / 200);
+  if (z < 550) {
+    return Math.max(0, (550 - z) / 200);
   }
   return 0;
 };
@@ -78,24 +78,21 @@ const Stars = () => {
       scrollVelocity = scrollVelocity * 0.85 + scrollDelta * 0.15;
 
       const dt = delta / 1000;
-      // Clamp scroll thrust to maintain smooth hyperspace feel without violent coordinate jumps
-      const rawThrust = scrollVelocity * 15;
-      const thrust = Math.min(Math.max(rawThrust, -60), 350);
+      let thrust = scrollVelocity * 20;
 
       if (eggStateRef.current !== 'suck' && eggStateRef.current !== 'supernova_charge') {
-        z1 = (z1 + (15 + thrust) * dt) % 2800;
-        z2 = (z2 + (30 + thrust * 2) * dt) % 2800;
-        z3 = (z3 + (60 + thrust * 3.5) * dt) % 2800;
+        z1 = (z1 + (10 + thrust) * dt) % 2000;
+        z2 = (z2 + (20 + thrust * 3) * dt) % 2000;
+        z3 = (z3 + (40 + thrust * 8) * dt) % 2000;
 
-        if (z1 < 0) z1 += 2800;
-        if (z2 < 0) z2 += 2800;
-        if (z3 < 0) z3 += 2800;
+        if (z1 < 0) z1 += 2000;
+        if (z2 < 0) z2 += 2000;
+        if (z3 < 0) z3 += 2000;
 
         const updateLayer = (refs, z) => {
           refs.forEach((ref, i) => {
             if (!ref) return;
-            // 2 planes spaced by 1400px over a 2800px cosmic cycle spanning [-2500px, +300px]
-            const layerZ = ((z + i * 1400) % 2800) - 2500;
+            const layerZ = ((z + i * 1000) % 2000) - 1000;
             ref.style.transform = `translateZ(${layerZ}px)`;
             ref.style.opacity = getLayerOpacity(layerZ);
           });
