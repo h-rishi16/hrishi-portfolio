@@ -9,23 +9,23 @@ const generateShadows = (count) => {
   return s.join(', ');
 };
 
-const SHADOWS_1 = generateShadows(600);
-const SHADOWS_2 = generateShadows(250);
-const SHADOWS_3 = generateShadows(100);
+const SHADOWS_1 = generateShadows(1000);
+const SHADOWS_2 = generateShadows(400);
+const SHADOWS_3 = generateShadows(150);
 
 // Boundary-only fade on the original [-1000px, +1000px] depth:
-// 1. Far wrap (-1000px to -750px): fades in smoothly from 0.0 to 1.0 (zero pop-in when wrapping)
-// 2. Full visible sky (-750px to +350px): 100% full, solid brilliance
-// 3. Near camera (+350px to +550px): dissolves before camera plane (600px) so stars never block the screen
+// 1. Far wrap (-1000px to -850px): fades in smoothly from 0.0 to 1.0 (zero pop-in when wrapping)
+// 2. Full visible sky (-850px to +400px): 100% full, solid brilliance
+// 3. Near camera (+400px to +550px): dissolves before camera plane (600px) so stars never block the screen
 const getLayerOpacity = (z) => {
-  if (z < -750) {
-    return Math.max(0, (z + 1000) / 250);
+  if (z < -850) {
+    return Math.max(0, (z + 1000) / 150);
   }
-  if (z <= 350) {
+  if (z <= 400) {
     return 1;
   }
   if (z < 550) {
-    return Math.max(0, (550 - z) / 200);
+    return Math.max(0, (550 - z) / 150);
   }
   return 0;
 };
@@ -65,7 +65,7 @@ const Stars = () => {
     let lastScrollY = window.scrollY;
     let lastTime = performance.now();
     let scrollVelocity = 0;
-    let z1 = 0, z2 = 0, z3 = 0;
+    let z1 = 400, z2 = 700, z3 = 1100;
     let rafId;
 
     const tick = (now) => {
