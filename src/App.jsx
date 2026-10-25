@@ -78,12 +78,6 @@ function App() {
     document.documentElement.style.backgroundColor = '';
   }, []);
 
-  useEffect(() => {
-    if ('scrollRestoration' in window.history) {
-      window.history.scrollRestoration = 'manual';
-    }
-  }, []);
-
   return (
     <div key={resetKey} className={`app ${eggState === 'supernova_charge' ? 'charging-elements' : ''}`}>
       {isInverted && (
@@ -111,7 +105,6 @@ function App() {
             onClick={(e) => {
               e.preventDefault();
               window.scrollTo({ top: 0, behavior: 'smooth' });
-              window.history.replaceState(null, '', window.location.pathname);
             }}
             style={{ fontWeight: 700, fontSize: '1.25rem', fontFamily: 'var(--font-display)', letterSpacing: '-0.02em', color: 'var(--text-primary)', textDecoration: 'none' }}
           >

@@ -83,13 +83,10 @@ body {
 }
 
 .text-silver-gradient {
-  background: linear-gradient(to right, #a3a3a3 0%, #ffffff 50%, #a3a3a3 100%);
+  background: linear-gradient(to right, var(--text-tertiary), #ffffff, var(--text-tertiary));
   background-size: 200% 100%;
   -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
   color: transparent;
-  display: inline-block;
   animation: shine 4s linear infinite;
 }
 
