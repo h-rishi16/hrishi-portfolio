@@ -46,36 +46,38 @@ const Hero = () => {
         </motion.p>
 
         <motion.h1
-          className="heading-xl text-silver-gradient"
+          className="heading-xl"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1, delay: 0.2 }}
         >
-          Hrishi<span className="text-silver-gradient" style={{ position: 'relative', display: 'inline-block' }}>
-            <span style={{ pointerEvents: 'none', padding: '0 5px' }}>.</span>
-            <span
-              onMouseDown={(e) => {
-                const x = e.clientX;
-                const y = e.clientY;
-                window.dispatchEvent(new CustomEvent('EASTER_EGG', { detail: { state: 'suck', x, y } }));
-              }}
-              onMouseUp={() => window.dispatchEvent(new CustomEvent('EASTER_EGG', { detail: { state: 'normal' } }))}
-              onMouseLeave={() => window.dispatchEvent(new CustomEvent('EASTER_EGG', { detail: { state: 'normal' } }))}
-              onDoubleClick={(e) => {
-                const x = e.clientX;
-                const y = e.clientY;
-                window.dispatchEvent(new CustomEvent('EASTER_EGG', { detail: { state: 'supernova_charge', x, y } }));
-              }}
-              style={{ 
-                position: 'absolute',
-                left: 0,
-                bottom: '0.15em',
-                width: '100%',
-                height: '0.3em',
-                cursor: 'crosshair',
-                zIndex: 20
-              }}
-            />
+          <span className="text-silver-gradient">
+            Hrishi<span style={{ position: 'relative', display: 'inline-block' }}>
+              <span style={{ pointerEvents: 'none', padding: '0 5px' }}>.</span>
+              <span
+                onMouseDown={(e) => {
+                  const x = e.clientX;
+                  const y = e.clientY;
+                  window.dispatchEvent(new CustomEvent('EASTER_EGG', { detail: { state: 'suck', x, y } }));
+                }}
+                onMouseUp={() => window.dispatchEvent(new CustomEvent('EASTER_EGG', { detail: { state: 'normal' } }))}
+                onMouseLeave={() => window.dispatchEvent(new CustomEvent('EASTER_EGG', { detail: { state: 'normal' } }))}
+                onDoubleClick={(e) => {
+                  const x = e.clientX;
+                  const y = e.clientY;
+                  window.dispatchEvent(new CustomEvent('EASTER_EGG', { detail: { state: 'supernova_charge', x, y } }));
+                }}
+                style={{ 
+                  position: 'absolute',
+                  left: 0,
+                  bottom: '0.15em',
+                  width: '100%',
+                  height: '0.3em',
+                  cursor: 'crosshair',
+                  zIndex: 20
+                }}
+              />
+            </span>
           </span>
         </motion.h1>
 
