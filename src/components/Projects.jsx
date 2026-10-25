@@ -44,26 +44,18 @@ const projectData = [
 const Projects = () => {
   return (
     <section id="projects" className="section container">
-      <motion.h2 
+      <h2 
         className="heading-lg" 
-        style={{ textAlign: 'center', marginBottom: '5rem', willChange: 'opacity, transform' }}
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, amount: 0.1 }}
-        transition={{ duration: 0.5, ease: 'easeOut' }}
+        style={{ textAlign: 'center', marginBottom: '5rem' }}
       >
         Projects
-      </motion.h2>
+      </h2>
         
         <div style={{ display: 'flex', flexDirection: 'column', gap: '5rem', maxWidth: '800px', margin: '0 auto' }}>
           {projectData.map((p, i) => (
-            <motion.div 
+            <div 
               key={i} 
-              style={{ display: 'flex', flexDirection: 'column', willChange: 'opacity, transform' }}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, amount: 0.1 }}
-              transition={{ duration: 0.5, ease: 'easeOut' }}
+              style={{ display: 'flex', flexDirection: 'column' }}
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.75rem' }}>
                 <span style={{ width: '12px', height: '12px', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -101,7 +93,7 @@ const Projects = () => {
               <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: '0.75rem', letterSpacing: '0.15em', textTransform: 'uppercase', fontWeight: 500 }}>
                 {p.tech.join('  /  ')}
               </p>
-            </motion.div>
+            </div>
           ))}
         </div>
     </section>

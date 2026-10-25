@@ -9,9 +9,9 @@ const generateShadows = (count) => {
   return s.join(', ');
 };
 
-const SHADOWS_1 = generateShadows(600);
-const SHADOWS_2 = generateShadows(250);
-const SHADOWS_3 = generateShadows(100);
+const SHADOWS_1 = generateShadows(500);
+const SHADOWS_2 = generateShadows(210);
+const SHADOWS_3 = generateShadows(90);
 
 // Smooth, continuous depth opacity curve:
 // 1. Far wrap (-1000px to -800px): fades in smoothly (0 -> 1) over 200px (zero pop-in when wrapping)

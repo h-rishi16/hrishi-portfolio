@@ -24,16 +24,12 @@ const academicData = [
 const Academics = () => {
   return (
     <section id="academics" className="section container">
-      <motion.h2
+      <h2
         className="heading-lg"
-        style={{ textAlign: "center", marginBottom: "5rem", willChange: "opacity, transform" }}
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, amount: 0.1 }}
-        transition={{ duration: 0.5, ease: "easeOut" }}
+        style={{ textAlign: "center", marginBottom: "5rem" }}
       >
         Academics
-      </motion.h2>
+      </h2>
 
       <div
         style={{
@@ -45,13 +41,9 @@ const Academics = () => {
         }}
       >
         {academicData.map((edu, i) => (
-          <motion.div
+          <div
             key={i}
-            style={{ display: "flex", flexDirection: "column", willChange: "opacity, transform" }}
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, amount: 0.1 }}
-            transition={{ duration: 0.5, ease: "easeOut" }}
+            style={{ display: "flex", flexDirection: "column" }}
           >
             <div
               style={{
@@ -137,7 +129,7 @@ const Academics = () => {
                 {edu.years}
               </span>
             </div>
-          </motion.div>
+          </div>
         ))}
       </div>
     </section>
