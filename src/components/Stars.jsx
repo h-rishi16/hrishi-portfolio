@@ -13,19 +13,19 @@ const SHADOWS_1 = generateShadows(1000);
 const SHADOWS_2 = generateShadows(400);
 const SHADOWS_3 = generateShadows(150);
 
-// Boundary-only fade on the original [-1000px, +1000px] depth:
-// 1. Far wrap (-1000px to -850px): fades in smoothly from 0.0 to 1.0 (zero pop-in when wrapping)
-// 2. Full visible sky (-850px to +400px): 100% full, solid brilliance
-// 3. Near camera (+400px to +550px): dissolves before camera plane (600px) so stars never block the screen
+// Smooth, continuous depth opacity curve:
+// 1. Far wrap (-1000px to -800px): fades in smoothly (0 -> 1) over 200px (zero pop-in when wrapping)
+// 2. Stable visible sky (-800px to +250px): 100% full brilliance across the entire screen
+// 3. Near camera (+250px to +450px): smoothly dissolves before camera eye (600px)
 const getLayerOpacity = (z) => {
-  if (z < -850) {
-    return Math.max(0, (z + 1000) / 150);
+  if (z < -800) {
+    return Math.max(0, (z + 1000) / 200);
   }
-  if (z <= 400) {
+  if (z <= 250) {
     return 1;
   }
-  if (z < 550) {
-    return Math.max(0, (550 - z) / 150);
+  if (z < 450) {
+    return Math.max(0, (450 - z) / 200);
   }
   return 0;
 };
@@ -65,25 +65,33 @@ const Stars = () => {
     let lastScrollY = window.scrollY;
     let lastTime = performance.now();
     let scrollVelocity = 0;
+    let smoothVelocity = 0;
     let z1 = 400, z2 = 700, z3 = 1100;
     let rafId;
 
     const tick = (now) => {
       const delta = Math.min(now - lastTime, 50);
       lastTime = now;
+      const dt = delta / 1000;
 
       const currentScrollY = window.scrollY;
       const scrollDelta = currentScrollY - lastScrollY;
       lastScrollY = currentScrollY;
-      scrollVelocity = scrollVelocity * 0.85 + scrollDelta * 0.15;
 
-      const dt = delta / 1000;
-      let thrust = scrollVelocity * 20;
+      // Two-tier fluid momentum filter:
+      // 1. Raw impulse from scroll delta
+      scrollVelocity = scrollVelocity * 0.82 + (scrollDelta * 18) * 0.18;
+      // 2. Exponential critically damped lerp for buttery ProMotion smoothness (frame-rate independent)
+      const lerpFactor = 1 - Math.exp(-dt * 14);
+      smoothVelocity += (scrollVelocity - smoothVelocity) * lerpFactor;
+
+      const thrust = smoothVelocity;
 
       if (eggStateRef.current !== 'suck' && eggStateRef.current !== 'supernova_charge') {
-        z1 = (z1 + (10 + thrust) * dt) % 2000;
-        z2 = (z2 + (20 + thrust * 3) * dt) % 2000;
-        z3 = (z3 + (40 + thrust * 8) * dt) % 2000;
+        // Balanced, harmonious parallax speeds: 1x, 2.2x, 4.5x with silky smooth forward/backward drift
+        z1 = (z1 + (12 + thrust) * dt) % 2000;
+        z2 = (z2 + (24 + thrust * 2.2) * dt) % 2000;
+        z3 = (z3 + (48 + thrust * 4.5) * dt) % 2000;
 
         if (z1 < 0) z1 += 2000;
         if (z2 < 0) z2 += 2000;
@@ -93,7 +101,7 @@ const Stars = () => {
           refs.forEach((ref, i) => {
             if (!ref) return;
             const layerZ = ((z + i * 1000) % 2000) - 1000;
-            ref.style.transform = `translateZ(${layerZ}px)`;
+            ref.style.transform = `translate3d(0, 0, ${layerZ}px)`;
             ref.style.opacity = getLayerOpacity(layerZ);
           });
         };
