@@ -5,8 +5,8 @@ const StarLayer = ({ count, size, baseSpeed, velocityMultiplier, eggStateRef }) 
   const shadows = useMemo(() => {
     let s = [];
     for (let i = 0; i < count; i++) {
-      // Scatter stars with comfortable margin beyond viewport without bloating GPU texture size
-      s.push(`${Math.floor(Math.random() * 120 - 10)}vw ${Math.floor(Math.random() * 120 - 10)}vh rgba(255, 255, 255, ${Math.random() * 0.8 + 0.2})`);
+      // Scatter stars in a wide area so they don't clip out when zooming past the camera
+      s.push(`${Math.floor(Math.random() * 200 - 50)}vw ${Math.floor(Math.random() * 200 - 50)}vh rgba(255, 255, 255, ${Math.random() * 0.8 + 0.2})`);
     }
     return s.join(', ');
   }, [count]);
@@ -23,8 +23,6 @@ const StarLayer = ({ count, size, baseSpeed, velocityMultiplier, eggStateRef }) 
     
     // Scroll down = positive velocity. Forward motion on scroll down, backward on scroll up.
     let velocityMove = smoothVelocity.get() * (delta / 1000) * velocityMultiplier;
-    // Clamp velocityMove to prevent single-frame singularity warps that choke GPU rasterization
-    velocityMove = Math.max(-100, Math.min(100, velocityMove));
     moveBy += velocityMove;
     
     zPos.set((zPos.get() + moveBy) % 2000);
@@ -102,8 +100,8 @@ const Stars = () => {
           willChange: 'transform, opacity'
         }}
       >
-        <StarLayer count={550} size="1px" baseSpeed={50} velocityMultiplier={5.0} eggStateRef={eggStateRef} />
-        <StarLayer count={250} size="2px" baseSpeed={100} velocityMultiplier={10.0} eggStateRef={eggStateRef} />
+        <StarLayer count={600} size="1px" baseSpeed={50} velocityMultiplier={5.0} eggStateRef={eggStateRef} />
+        <StarLayer count={200} size="2px" baseSpeed={100} velocityMultiplier={10.0} eggStateRef={eggStateRef} />
         <StarLayer count={100} size="3px" baseSpeed={250} velocityMultiplier={25.0} eggStateRef={eggStateRef} />
       </motion.div>
     </div>
