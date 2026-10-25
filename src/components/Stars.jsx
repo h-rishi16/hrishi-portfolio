@@ -101,9 +101,9 @@ const Stars = () => {
           transformOrigin: `${origin.x} ${origin.y}`
         }}
       >
-        <StarLayer count={600} size="1px" baseSpeed={50} velocityMultiplier={3.5} initialZ={800} eggStateRef={eggStateRef} />
-        <StarLayer count={200} size="2px" baseSpeed={100} velocityMultiplier={7.0} initialZ={1200} eggStateRef={eggStateRef} />
-        <StarLayer count={100} size="3px" baseSpeed={250} velocityMultiplier={17.5} initialZ={500} eggStateRef={eggStateRef} />
+        <StarLayer count={600} size="1px" baseSpeed={50} velocityMultiplier={2.5} initialZ={800} eggStateRef={eggStateRef} />
+        <StarLayer count={200} size="2px" baseSpeed={100} velocityMultiplier={5.0} initialZ={1200} eggStateRef={eggStateRef} />
+        <StarLayer count={100} size="3px" baseSpeed={250} velocityMultiplier={12.5} initialZ={500} eggStateRef={eggStateRef} />
       </motion.div>
     </div>
   );
