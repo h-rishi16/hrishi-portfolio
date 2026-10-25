@@ -34,39 +34,67 @@ const Stars = () => {
     const ctx = canvas.getContext('2d', { alpha: true });
     let rafId;
 
-    let cx = window.innerWidth / 2;
-    let cy = window.innerHeight / 2;
+    const FOV = 600;
+    const MAX_Z = 2000;
+    const MARGIN = 100;
+    const STAR_COUNT = 1600;
+
+    let w = window.innerWidth;
+    let h = window.innerHeight;
+    let cx = w / 2;
+    let cy = h / 2;
 
     const resize = () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-      cx = canvas.width / 2;
-      cy = canvas.height / 2;
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      w = window.innerWidth;
+      h = window.innerHeight;
+      cx = w / 2;
+      cy = h / 2;
+
+      canvas.width = Math.floor(w * dpr);
+      canvas.height = Math.floor(h * dpr);
+      canvas.style.width = `${w}px`;
+      canvas.style.height = `${h}px`;
+
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.scale(dpr, dpr);
     };
+
     window.addEventListener('resize', resize);
     resize();
 
-    const generateStars = (count, layer) => {
-      const arr = [];
-      const spreadX = window.innerWidth * 3;
-      const spreadY = window.innerHeight * 3;
-      for (let i = 0; i < count; i++) {
-        arr.push({
-          x: Math.random() * spreadX - spreadX / 2,
-          y: Math.random() * spreadY - spreadY / 2,
-          z: Math.random() * 2000,
-          layer: layer,
-          size: layer === 1 ? 0.8 : layer === 2 ? 1.5 : 2.2
-        });
+    const initOrResetStar = (star, isInitial = false) => {
+      star.z = isInitial ? Math.random() * MAX_Z : MAX_Z;
+
+      // Full frustum spread at depth z so stars uniformly cover the viewport with zero empty margins
+      const spreadX = (w + MARGIN * 2) * (star.z / FOV);
+      const spreadY = (h + MARGIN * 2) * (star.z / FOV);
+
+      star.x = (Math.random() - 0.5) * spreadX;
+      star.y = (Math.random() - 0.5) * spreadY;
+
+      const r = Math.random();
+      if (r < 0.70) {
+        star.baseSize = 0.9;
+        star.color = Math.random() < 0.2 ? '195, 220, 255' : '255, 255, 255';
+      } else if (r < 0.92) {
+        star.baseSize = 1.6;
+        star.color = Math.random() < 0.25 ? '255, 242, 225' : '255, 255, 255';
+      } else {
+        star.baseSize = 2.4;
+        star.color = Math.random() < 0.3 ? '210, 235, 255' : '255, 255, 255';
       }
-      return arr;
+
+      star.twinklePhase = Math.random() * Math.PI * 2;
+      star.twinkleSpeed = 0.8 + Math.random() * 1.6;
+      star.baseAlpha = 0.55 + Math.random() * 0.45;
     };
 
-    const stars = [
-      ...generateStars(1200, 1),
-      ...generateStars(600, 2),
-      ...generateStars(300, 3)
-    ];
+    const stars = Array.from({ length: STAR_COUNT }, () => {
+      const s = {};
+      initOrResetStar(s, true);
+      return s;
+    });
 
     let lastScrollY = window.scrollY;
     let lastTime = performance.now();
@@ -80,59 +108,74 @@ const Stars = () => {
       const currentScrollY = window.scrollY;
       const scrollDelta = currentScrollY - lastScrollY;
       lastScrollY = currentScrollY;
-      
+
       scrollVelocity = scrollVelocity * 0.85 + scrollDelta * 0.15;
-      const thrust = scrollVelocity * 20;
+      const thrust = scrollVelocity * 25;
+      const clampedThrust = Math.min(Math.max(thrust, -40), 900);
+      const forwardSpeed = Math.max(10, 65 + clampedThrust);
 
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.clearRect(0, 0, w, h);
 
-      const fov = 600;
+      const isFrozen = eggStateRef.current === 'suck' || eggStateRef.current === 'supernova_charge';
 
-        for (let i = 0; i < stars.length; i++) {
-          const star = stars[i];
+      for (let i = 0; i < stars.length; i++) {
+        const star = stars[i];
 
-          // Only move stars if not in easter egg mode
-          if (eggStateRef.current !== 'suck' && eggStateRef.current !== 'supernova_charge') {
-            let speed = 0;
-            if (star.layer === 1) speed = 10 + thrust;
-            else if (star.layer === 2) speed = 20 + thrust * 3;
-            else if (star.layer === 3) speed = 40 + thrust * 8;
+        if (!isFrozen) {
+          star.z -= forwardSpeed * dt;
+        }
 
-            star.z -= speed * dt;
+        const scale = FOV / star.z;
+        const projX = cx + star.x * scale;
+        const projY = cy + star.y * scale;
 
-            const spreadX = canvas.width * 3;
-            const spreadY = canvas.height * 3;
+        // Reset if star has flown behind camera or outside visible frustum
+        if (!isFrozen && (star.z <= 1 || projX < -MARGIN || projX > w + MARGIN || projY < -MARGIN || projY > h + MARGIN)) {
+          initOrResetStar(star, false);
+          continue;
+        }
 
-            if (star.z <= 0) {
-              star.z += 2000;
-              star.x = Math.random() * spreadX - spreadX / 2;
-              star.y = Math.random() * spreadY - spreadY / 2;
-            } else if (star.z > 2000) {
-              star.z -= 2000;
-              star.x = Math.random() * spreadX - spreadX / 2;
-              star.y = Math.random() * spreadY - spreadY / 2;
-            }
-          }
+        // Seamless opacity fading (emerge smoothly in deep space, dissolve near camera)
+        let depthAlpha = 1;
+        if (star.z > MAX_Z - 400) {
+          depthAlpha = (MAX_Z - star.z) / 400;
+        } else if (star.z < 250) {
+          depthAlpha = star.z / 250;
+        }
 
-          const scale = fov / (star.z + 1);
-          const projX = cx + star.x * scale;
-          const projY = cy + star.y * scale;
+        const twinkle = 0.8 + 0.2 * Math.sin(star.twinklePhase + now * 0.002 * star.twinkleSpeed);
+        const finalAlpha = Math.max(0, Math.min(1, depthAlpha * star.baseAlpha * twinkle));
 
-          let opacity = 1;
-          if (star.z > 1900) {
-            opacity = (2000 - star.z) / 100; 
-          } else if (star.z < 400) {
-            opacity = star.z / 400;
-          }
+        if (finalAlpha <= 0.01) continue;
 
-          if (opacity > 0 && projX > 0 && projX < canvas.width && projY > 0 && projY < canvas.height) {
+        const starSize = star.baseSize * Math.min(2.2, Math.max(0.6, scale));
+
+        if (starSize <= 1.3) {
+          // Sharp pixel diamond for distant stars (zero Retina blur)
+          ctx.fillStyle = `rgba(${star.color}, ${finalAlpha})`;
+          ctx.fillRect(
+            Math.round(projX - starSize / 2),
+            Math.round(projY - starSize / 2),
+            Math.max(1, Math.round(starSize)),
+            Math.max(1, Math.round(starSize))
+          );
+        } else {
+          // Crisp circle for closer stars
+          ctx.beginPath();
+          ctx.fillStyle = `rgba(${star.color}, ${finalAlpha})`;
+          ctx.arc(projX, projY, starSize / 2, 0, Math.PI * 2);
+          ctx.fill();
+
+          // Delicate celestial aura for foreground stars
+          if (starSize > 2.0 && finalAlpha > 0.4) {
             ctx.beginPath();
-            ctx.fillStyle = `rgba(255, 255, 255, ${opacity})`;
-            ctx.arc(projX, projY, Math.max(0.1, star.size * scale), 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(${star.color}, ${finalAlpha * 0.22})`;
+            ctx.arc(projX, projY, starSize * 1.5, 0, Math.PI * 2);
             ctx.fill();
           }
         }
-      
+      }
+
       rafId = requestAnimationFrame(tick);
     };
 
