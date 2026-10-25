@@ -78,6 +78,14 @@ function App() {
     document.documentElement.style.backgroundColor = '';
   }, []);
 
+  const handleNavClick = (e, id) => {
+    e.preventDefault();
+    const el = document.getElementById(id);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
   return (
     <div key={resetKey} className={`app ${eggState === 'supernova_charge' ? 'charging-elements' : ''}`}>
       {isInverted && (
@@ -100,12 +108,12 @@ function App() {
       <Stars />
       <header>
         <div className="container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <a href="#" style={{ fontWeight: 700, fontSize: '1.25rem', fontFamily: 'var(--font-display)', letterSpacing: '-0.02em', color: 'var(--text-primary)', textDecoration: 'none' }}>Hrishi.</a>
+          <a href="#" onClick={(e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: 'smooth' }); }} style={{ fontWeight: 700, fontSize: '1.25rem', fontFamily: 'var(--font-display)', letterSpacing: '-0.02em', color: 'var(--text-primary)', textDecoration: 'none' }}>Hrishi.</a>
           <nav style={{ display: 'flex', gap: '1.5rem' }}>
-            <a href="#projects" className="nav-link">Projects</a>
-            <a href="#academics" className="nav-link">Academics</a>
-            <a href="#about" className="nav-link">About</a>
-            <a href="#contact" className="nav-link">Contact</a>
+            <a href="#projects" onClick={(e) => handleNavClick(e, 'projects')} className="nav-link">Projects</a>
+            <a href="#academics" onClick={(e) => handleNavClick(e, 'academics')} className="nav-link">Academics</a>
+            <a href="#about" onClick={(e) => handleNavClick(e, 'about')} className="nav-link">About</a>
+            <a href="#contact" onClick={(e) => handleNavClick(e, 'contact')} className="nav-link">Contact</a>
           </nav>
         </div>
       </header>

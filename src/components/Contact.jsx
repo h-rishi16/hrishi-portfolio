@@ -5,10 +5,11 @@ const Contact = () => {
   return (
     <section id="contact" className="container" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', textAlign: 'center', position: 'relative' }}>
       <motion.div
+        style={{ willChange: 'opacity, transform' }}
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
-        transition={{ duration: 0.8 }}
+        transition={{ duration: 0.5, ease: 'easeOut' }}
       >
         <h2 className="heading-lg">Let's build something.</h2>
         <p style={{ color: 'var(--text-tertiary)', maxWidth: '400px', margin: '0 auto 3rem', fontSize: '0.85rem', letterSpacing: '0.2em', textTransform: 'uppercase' }}>

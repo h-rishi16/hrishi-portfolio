@@ -46,11 +46,11 @@ const Projects = () => {
     <section id="projects" className="section container">
       <motion.h2 
         className="heading-lg" 
-        style={{ textAlign: 'center', marginBottom: '5rem' }}
-        initial={{ opacity: 0, y: 30 }}
+        style={{ textAlign: 'center', marginBottom: '5rem', willChange: 'opacity, transform' }}
+        initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, amount: 0.1 }}
-        transition={{ duration: 0.8 }}
+        transition={{ duration: 0.5, ease: 'easeOut' }}
       >
         Projects
       </motion.h2>
@@ -59,11 +59,11 @@ const Projects = () => {
           {projectData.map((p, i) => (
             <motion.div 
               key={i} 
-              style={{ display: 'flex', flexDirection: 'column' }}
-              initial={{ opacity: 0, y: 50 }}
+              style={{ display: 'flex', flexDirection: 'column', willChange: 'opacity, transform' }}
+              initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, amount: 0.1 }}
-              transition={{ duration: 0.8, delay: 0.1 }}
+              transition={{ duration: 0.5, ease: 'easeOut' }}
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.75rem' }}>
                 <span style={{ width: '12px', height: '12px', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>

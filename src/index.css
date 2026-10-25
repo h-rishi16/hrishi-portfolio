@@ -30,7 +30,7 @@
 }
 
 html {
-  scroll-behavior: smooth;
+  /* Native scrolling for fluid, jitter-free trackpad & wheel momentum */
 }
 
 body {
@@ -40,6 +40,8 @@ body {
   line-height: 1.6;
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
 /* Cinematic Utilities */
@@ -88,6 +90,8 @@ body {
   -webkit-background-clip: text;
   color: transparent;
   animation: shine 4s linear infinite;
+  will-change: background-position;
+  transform: translateZ(0);
 }
 
 @keyframes shine {
@@ -166,6 +170,8 @@ h1, h2, h3, h4, h5, h6 {
   padding: 8rem 0;
   position: relative;
   z-index: 10;
+  transform: translateZ(0);
+  backface-visibility: hidden;
 }
 
 /* Header */

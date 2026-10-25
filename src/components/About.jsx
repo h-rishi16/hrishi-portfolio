@@ -10,11 +10,11 @@ const About = () => {
     <section id="about" className="section container">
       <motion.h2 
         className="heading-lg" 
-        style={{ textAlign: 'center', marginBottom: '5rem' }}
-        initial={{ opacity: 0, y: 30 }}
+        style={{ textAlign: 'center', marginBottom: '5rem', willChange: 'opacity, transform' }}
+        initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, amount: 0.1 }}
-        transition={{ duration: 0.8 }}
+        transition={{ duration: 0.5, ease: 'easeOut' }}
       >
         About Me
       </motion.h2>
@@ -22,20 +22,21 @@ const About = () => {
       <div style={{ maxWidth: '800px', margin: '0 auto' }}>
           <motion.h3 
             className="text-silver-gradient" 
-            style={{ fontSize: '1.5rem', marginBottom: '3rem', fontWeight: 400, letterSpacing: '-0.01em', lineHeight: 1.5 }}
-            initial={{ opacity: 0, y: 40 }}
+            style={{ fontSize: '1.5rem', marginBottom: '3rem', fontWeight: 400, letterSpacing: '-0.01em', lineHeight: 1.5, willChange: 'opacity, transform' }}
+            initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.1 }}
-            transition={{ duration: 0.8 }}
+            transition={{ duration: 0.5, ease: 'easeOut' }}
           >
             I am Hrishikesh Joshi, a motivated and detail-oriented Computer Science student with hands-on experience in machine learning, data analysis, and software development.
           </motion.h3>
           
           <motion.div
-            initial={{ opacity: 0, y: 40 }}
+            style={{ willChange: 'opacity, transform' }}
+            initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.1 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
+            transition={{ duration: 0.5, ease: 'easeOut' }}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.75rem' }}>
               <span style={{ width: '12px', height: '12px', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
