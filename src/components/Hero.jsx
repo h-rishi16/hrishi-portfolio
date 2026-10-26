@@ -45,39 +45,64 @@ const Hero = () => {
           Hello, I am
         </motion.p>
 
-        <motion.h1
-          className="heading-xl text-silver-gradient"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1, delay: 0.2 }}
-        >
-          Hrishi<span className="text-silver-gradient" style={{ position: 'relative', display: 'inline-block' }}>
-            <span style={{ pointerEvents: 'none', padding: '0 5px' }}>.</span>
-            <span
-              onMouseDown={(e) => {
-                const x = e.clientX;
-                const y = e.clientY;
-                window.dispatchEvent(new CustomEvent('EASTER_EGG', { detail: { state: 'suck', x, y } }));
-              }}
-              onMouseUp={() => window.dispatchEvent(new CustomEvent('EASTER_EGG', { detail: { state: 'normal' } }))}
-              onMouseLeave={() => window.dispatchEvent(new CustomEvent('EASTER_EGG', { detail: { state: 'normal' } }))}
-              onDoubleClick={(e) => {
-                const x = e.clientX;
-                const y = e.clientY;
-                window.dispatchEvent(new CustomEvent('EASTER_EGG', { detail: { state: 'supernova_charge', x, y } }));
-              }}
-              style={{ 
-                position: 'absolute',
-                left: 0,
-                bottom: '0.15em',
-                width: '100%',
-                height: '0.3em',
-                cursor: 'crosshair',
-                zIndex: 20
-              }}
-            />
-          </span>
-        </motion.h1>
+        <div style={{ position: 'relative', display: 'inline-block' }}>
+          <motion.h1
+            className="heading-xl text-silver-gradient"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 1, delay: 0.2 }}
+            style={{ margin: 0, userSelect: 'none' }}
+          >
+            Hrishi.
+          </motion.h1>
+
+          {/* Dot 1: Tittle on first 'i' -> Supernova Burst & Color Inversion (Hidden Easter Egg) */}
+          <span
+            onClick={(e) => {
+              const rect = e.currentTarget.getBoundingClientRect();
+              const x = rect.left + rect.width / 2;
+              const y = rect.top + rect.height / 2;
+              window.dispatchEvent(new CustomEvent('EASTER_EGG', { detail: { state: 'supernova_charge', x, y } }));
+            }}
+            style={{
+              position: 'absolute',
+              left: '34%',
+              width: '11%',
+              top: '4%',
+              height: '35%',
+              zIndex: 30,
+              userSelect: 'none',
+            }}
+          />
+
+          {/* Dot 2: Tittle on second 'i' -> Black Hole Suction (Hold 5s to Explode & Reset) (Hidden Easter Egg) */}
+          <span
+            onMouseDown={(e) => {
+              const rect = e.currentTarget.getBoundingClientRect();
+              const x = rect.left + rect.width / 2;
+              const y = rect.top + rect.height / 2;
+              window.dispatchEvent(new CustomEvent('EASTER_EGG', { detail: { state: 'suck', x, y } }));
+            }}
+            onMouseUp={() => window.dispatchEvent(new CustomEvent('EASTER_EGG', { detail: { state: 'normal' } }))}
+            onMouseLeave={() => window.dispatchEvent(new CustomEvent('EASTER_EGG', { detail: { state: 'normal' } }))}
+            onTouchStart={(e) => {
+              const rect = e.currentTarget.getBoundingClientRect();
+              const x = rect.left + rect.width / 2;
+              const y = rect.top + rect.height / 2;
+              window.dispatchEvent(new CustomEvent('EASTER_EGG', { detail: { state: 'suck', x, y } }));
+            }}
+            onTouchEnd={() => window.dispatchEvent(new CustomEvent('EASTER_EGG', { detail: { state: 'normal' } }))}
+            style={{
+              position: 'absolute',
+              left: '80%',
+              width: '11%',
+              top: '4%',
+              height: '35%',
+              zIndex: 30,
+              userSelect: 'none',
+            }}
+          />
+        </div>
 
         <motion.p
           initial={{ opacity: 0, y: 20 }}

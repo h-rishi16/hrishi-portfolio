@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { motion } from 'framer-motion';
 import Hero from './components/Hero';
 import Projects from './components/Projects';
 import Academics from './components/Academics';
@@ -6,14 +7,23 @@ import About from './components/About';
 import Contact from './components/Contact';
 import Stars from './components/Stars';
 import Cursor from './components/Cursor';
+import Supernova from './components/Supernova';
+import BlackHole from './components/BlackHole';
 import { triggerGravity } from './utils/gravity';
 
 function App() {
   const [isInverted, setIsInverted] = useState(false);
-  const [isFlashing, setIsFlashing] = useState(false);
-  const [flashColor, setFlashColor] = useState('white');
   const [eggState, setEggState] = useState('normal');
+  const [supernovaOrigin, setSupernovaOrigin] = useState({
+    x: typeof window !== 'undefined' ? window.innerWidth / 2 : 500,
+    y: typeof window !== 'undefined' ? window.innerHeight / 2 : 400,
+  });
+  const [blackHoleOrigin, setBlackHoleOrigin] = useState({
+    x: typeof window !== 'undefined' ? window.innerWidth / 2 : 500,
+    y: typeof window !== 'undefined' ? window.innerHeight / 2 : 400,
+  });
   const [resetKey, setResetKey] = useState(0);
+  const blackHoleTimerRef = useRef(null);
 
   useEffect(() => {
     const handleReset = () => setResetKey(prev => prev + 1);
@@ -41,34 +51,105 @@ function App() {
     const handleEgg = (e) => {
       if (e.detail) {
         if (e.detail.state === 'supernova_charge') {
+          if (e.detail.x !== undefined && e.detail.y !== undefined) {
+            setSupernovaOrigin({ x: e.detail.x, y: e.detail.y });
+          }
           setEggState('supernova_charge');
-          
+
           setTimeout(() => {
-            setFlashColor(isInverted ? 'black' : 'white');
-            setIsFlashing(true);
             setEggState('supernova_explode');
-            window.dispatchEvent(new CustomEvent('EASTER_EGG', { detail: { state: 'supernova_explode' } }));
+            window.dispatchEvent(
+              new CustomEvent('EASTER_EGG', {
+                detail: { state: 'supernova_explode' },
+              })
+            );
+
+            // Invert colors during the blast flash
             setTimeout(() => {
-              setIsInverted(prev => !prev);
+              setIsInverted((prev) => !prev);
+            }, 150);
+
+            // Allow the explosion & pixel star ejecta to disperse (900ms) before returning eggState to normal
+            setTimeout(() => {
               setEggState('normal');
-              window.dispatchEvent(new CustomEvent('EASTER_EGG', { detail: { state: 'normal' } }));
-              setTimeout(() => {
-                setIsFlashing(false);
-              }, 800); 
-            }, 200); 
-          }, 2000);
+              window.dispatchEvent(
+                new CustomEvent('EASTER_EGG', { detail: { state: 'normal' } })
+              );
+            }, 900);
+          }, 1850);
+        } else if (e.detail.state === 'suck') {
+          if (e.detail.x !== undefined && e.detail.y !== undefined) {
+            setBlackHoleOrigin({ x: e.detail.x, y: e.detail.y });
+          }
+          setEggState('suck');
+
+          // During 5 seconds the stars are getting sucked, and after 5 sec it explodes and resets!
+          if (blackHoleTimerRef.current) clearTimeout(blackHoleTimerRef.current);
+          blackHoleTimerRef.current = setTimeout(() => {
+            setEggState('blackhole_explode');
+            window.dispatchEvent(
+              new CustomEvent('EASTER_EGG', {
+                detail: { state: 'blackhole_explode' },
+              })
+            );
+
+            // Explosion plays out for 900ms, then resets cleanly back to normal
+            setTimeout(() => {
+              setEggState('normal');
+              window.dispatchEvent(
+                new CustomEvent('EASTER_EGG', { detail: { state: 'normal' } })
+              );
+            }, 900);
+          }, 5000);
         } else if (e.detail.state === 'normal') {
-          setEggState('normal');
+          if (blackHoleTimerRef.current) {
+            clearTimeout(blackHoleTimerRef.current);
+            blackHoleTimerRef.current = null;
+          }
+
+          setEggState((prev) => {
+            if (prev === 'suck') {
+              // Trigger brief Hawking radiation release flash if released before 5s
+              setTimeout(() => {
+                setEggState('normal');
+                window.dispatchEvent(
+                  new CustomEvent('EASTER_EGG', { detail: { state: 'normal' } })
+                );
+              }, 280);
+              return 'hawking_burst';
+            }
+            if (prev === 'blackhole_explode') {
+              return prev; // let explosion complete its 900ms reset
+            }
+            return 'normal';
+          });
         }
       }
     };
     window.addEventListener('EASTER_EGG', handleEgg);
     window.addEventListener('keydown', handleKeyDown);
     return () => {
+      if (blackHoleTimerRef.current) clearTimeout(blackHoleTimerRef.current);
       window.removeEventListener('EASTER_EGG', handleEgg);
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [isInverted]);
+  }, []);
+
+  // Global safety hook: Ensure releasing mouse anywhere before 5s smoothly releases the black hole
+  useEffect(() => {
+    if (eggState !== 'suck') return;
+
+    const handleGlobalRelease = () => {
+      window.dispatchEvent(new CustomEvent('EASTER_EGG', { detail: { state: 'normal' } }));
+    };
+
+    window.addEventListener('mouseup', handleGlobalRelease);
+    window.addEventListener('touchend', handleGlobalRelease);
+    return () => {
+      window.removeEventListener('mouseup', handleGlobalRelease);
+      window.removeEventListener('touchend', handleGlobalRelease);
+    };
+  }, [eggState]);
 
   useEffect(() => {
     document.documentElement.style.filter = '';
@@ -122,15 +203,46 @@ function App() {
     animationId = requestAnimationFrame(step);
   };
 
+  useEffect(() => {
+    const handlePopState = () => {
+      const hash = window.location.hash.replace('#', '');
+      if (!hash) {
+        smoothScrollTo(0);
+      } else {
+        const element = document.getElementById(hash);
+        if (element) {
+          const top = hash === 'contact'
+            ? element.getBoundingClientRect().top + window.scrollY
+            : Math.max(0, element.getBoundingClientRect().top + window.scrollY - 70);
+          smoothScrollTo(top);
+        }
+      }
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
   const handleNavClick = (e, id) => {
     e.preventDefault();
+    if (e.currentTarget && typeof e.currentTarget.blur === 'function') {
+      e.currentTarget.blur();
+    }
+
     if (id === 'top') {
+      window.history.pushState(null, '', window.location.pathname);
       smoothScrollTo(0);
       return;
     }
+
+    window.history.pushState(null, '', `#${id}`);
+
     const element = document.getElementById(id);
     if (element) {
-      const top = Math.max(0, element.getBoundingClientRect().top + window.scrollY - 70);
+      // Contact is a full-viewport (100vh) section with centered content and a footer at the bottom.
+      // Align exactly to the element's top boundary so it perfectly fills the screen without cutting off the footer.
+      const top = id === 'contact'
+        ? element.getBoundingClientRect().top + window.scrollY
+        : Math.max(0, element.getBoundingClientRect().top + window.scrollY - 70);
       smoothScrollTo(top);
     }
   };
@@ -147,12 +259,8 @@ function App() {
           pointerEvents: 'none'
         }} />
       )}
-      {isFlashing && (
-        <div style={{ 
-          position: 'fixed', inset: 0, backgroundColor: flashColor, zIndex: 999999, 
-          animation: 'flashAnim 0.8s ease-out forwards', pointerEvents: 'none' 
-        }} />
-      )}
+      <Supernova state={eggState} origin={supernovaOrigin} />
+      <BlackHole state={eggState} origin={blackHoleOrigin} />
       <Cursor />
       <Stars />
       <header>
